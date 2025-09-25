@@ -1,0 +1,268 @@
+/*
+  Estilos del Dashboard de Administración
+  --------------------------------------
+  - Variables CSS para colores y tipografías
+  - Disposición de tarjetas, filtros y tabla
+  - Modal de login y spinner de carga
+*/
+/* Configuración General */
+:root {
+    --primary-color: #005f73; /* Azul oscuro */
+    --secondary-color: #0a9396; /* Azul verdoso */
+    --background-color: #e9ecef;
+    --card-background: #ffffff;
+    --text-color: #343a40;
+    --header-color: #212529;
+    --border-color: #dee2e6;
+    --font-family: 'Roboto', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+header h1 {
+    color: var(--header-color);
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+/* Estilo de Tarjetas */
+.card {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+/* Filtros */
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Botones */
+.btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #004c5a;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Resumen y Exportación */
+.totals {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.total-metrics {
+    display: flex;
+    gap: 40px;
+}
+
+.metric-label {
+    display: block;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+.btn-export {
+    background-color: #1a7431;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-export:hover {
+    background-color: #155d27;
+}
+
+/* Tabla de Datos */
+.table-container {
+    overflow-x: auto; /* Para responsividad en pantallas pequeñas */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid var(--border-color);
+    padding: 12px;
+    text-align: left;
+    font-weight: 700;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== ESTILOS PARA EL MODAL DE LOGIN ===== */
+.login-overlay {
+    position: fixed; /* Cubre toda la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.login-modal {
+    background-color: var(--card-background);
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-modal h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.login-modal .form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.login-modal .btn {
+    width: 100%;
+}
+
+.error-message {
+    color: #d93025;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Clase para ocultar elementos */
+.hidden {
+    display: none !important;
+}
+
+/* Estilos para el Spinner de Carga */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loader-spinner {
+    border: 8px solid #f3f3f3; /* Gris claro */
+    border-top: 8px solid #3498db; /* Azul */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Otros estilos (asegúrate de tenerlos) */
+.hidden {
+    display: none !important;
+}
+
+.error-message {
+    color: #d93025;
+    margin-top: 10px;
+}

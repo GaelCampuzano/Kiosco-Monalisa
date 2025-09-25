@@ -1,0 +1,220 @@
+/*
+  Estilos del Kiosco Público
+  --------------------------
+  - Reset y variables de diseño
+  - Tarjeta central con tres pantallas
+  - Botones de propina y animación de éxito
+*/
+/* Reset Básico y Configuración General */
+:root {
+    --primary-color: #162b46; /* Naranja atardecer */
+    --secondary-color: #4a4a4a; /* Gris oscuro para texto */
+    --background-color: #f4f4f9; /* Fondo claro y suave */
+    --card-background: #ffffff;
+    --btn-hover-color: #162b46;
+    --border-color: #dfc894;
+    --success-color: #28a745; /* Verde para la animación de éxito */
+    --font-family: 'Montserrat', sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--secondary-color);
+    background-image: url(/assets/bkg.jpg);
+    background-size: cover;
+}
+
+
+#app-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Estructura de Pantallas */
+.screen {
+    display: none; /* Ocultas por defecto */
+}
+
+.screen.active {
+    display: block; /* La pantalla activa se muestra */
+}
+
+/* Estilo de la Tarjeta Principal */
+.card {
+    background-color: var(--card-background);
+    border-radius: 16px;
+    padding: 30px 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    
+}
+
+.logo {
+    max-width: 150px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+p {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+/* Estilos del Formulario */
+.form-group {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2);
+}
+
+/* Estilos de Botones */
+.btn {
+    padding: 18px 25px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    width: 100%;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-hover-color);
+    transform: translateY(-2px);
+}
+
+/* Estilos para la pantalla de propinas */
+.tip-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre botones */
+}
+
+.btn-tip {
+    background-color: #fff;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    font-size: 1.8rem;
+    padding: 25px;
+}
+
+.btn-tip:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+}
+
+#waiter-name-placeholder {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* --- Estilos y Animación para la pantalla de agradecimiento --- */
+.success-animation {
+    margin: 0 auto 20px auto;
+}
+
+.checkmark {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 4;
+    stroke: var(--success-color);
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px var(--success-color);
+    margin: 0 auto;
+}
+
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 4;
+    stroke-miterlimit: 10;
+    stroke: var(--success-color);
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+.animation-card {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

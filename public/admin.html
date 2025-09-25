@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--
+  Dashboard de Administración - Kiosco de Propinas
+  ------------------------------------------------
+  Propósito:
+    - Autenticación por Basic Auth (vía modal) para consultar datos
+    - Filtros por mesero y rango de fechas
+    - Cálculo de métricas (conteo y promedio)
+    - Exportación a CSV respetando filtros
+  Dependencias:
+    - admin.css: estilos de tablero, modal y spinner
+    - admin.js: lógica de autenticación, carga de datos y exportación
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Propinas - Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard de Propinas</h1>
+            <p>Consulta y exporta los registros del kiosco.</p>
+        </header>
+        
+        <main id="main-content" style="visibility: hidden;">
+            <div class="card filters">
+                 <h2>Filtros</h2>
+                <form id="filter-form" class="filter-controls">
+                    <div class="form-group">
+                        <label for="waiter-filter">Nombre del Mesero</label>
+                        <input type="text" id="waiter-filter" placeholder="Ej: Juan">
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date-filter">Fecha de Inicio</label>
+                        <input type="date" id="start-date-filter">
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date-filter">Fecha de Fin</label>
+                        <input type="date" id="end-date-filter">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                        <button type="button" id="reset-filters-btn" class="btn btn-secondary">Limpiar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card totals">
+                <h2>Resumen</h2>
+                <div class="total-metrics">
+                    <div>
+                        <span class="metric-label">Total de Registros</span>
+                        <span id="total-records" class="metric-value">0</span>
+                    </div>
+                    <div>
+                        <span class="metric-label">Propina Promedio</span>
+                        <span id="average-tip" class="metric-value">0%</span>
+                    </div>
+                </div>
+                <button id="export-csv-btn" class="btn btn-export">
+                    <i class="fa-solid fa-file-csv"></i>
+                    Exportar a CSV
+                </button>
+            </div>
+
+            <div class="card data-table">
+                 <h2>Registros</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Mesa</th>
+                                <th>Mesero</th>
+                                <th>Propina (%)</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tips-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <div id="loader" class="loader-overlay hidden">
+            <div class="loader-spinner"></div>
+        </div>
+    </div>
+
+    <div id="login-modal-overlay" class="login-overlay hidden">
+        <div class="login-modal">
+            <h2>Acceso de Administrador</h2>
+            <p>Por favor, ingresa tus credenciales.</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required>
+                </div>
+                <p id="login-error-message" class="error-message hidden"></p>
+                <button type="submit" class="btn btn-primary">Ingresar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

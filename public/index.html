@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--
+  Kiosco de Propinas - Interfaz Pública
+  ------------------------------------
+  Flujo de pantallas:
+    1) Mesero ingresa su nombre y mesa
+    2) Cliente elige porcentaje de propina (20, 23, 25)
+    3) Pantalla de agradecimiento y auto-reset
+  Archivos asociados:
+    - style.css: estilos del kiosco
+    - app.js: lógica del flujo y envío a la API
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosco de Propinas - Sunset Monalisa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Pantalla 1: Ingreso de Mesero -->
+        <section id="waiter-screen" class="screen active">
+            <div class="card">
+                <img src="/assets/Sunset-Monalisa-logo@2x_color.svg" alt="Logo Sunset Monalisa" class="logo">
+                <h1>Bienvenido</h1>
+                <p>Por favor, ingresa tus datos.</p>
+                <form id="waiter-form">
+                    <div class="form-group">
+                        <label for="waiter_name">Tu Nombre</label>
+                      <!--  <input type="text" id="waiter_name" name="waiter_name" required>-->
+                        <select name="waiter_name" id="waiter_name">
+                            <option value="0">--Selecciona usuario--</option>
+                            <option value="David">DAVID</option>
+                            <option value="Gael">GAEL</option>
+                            <option value="Ivan">IVAN</option>
+                            <option value="Luis">LUIS</option>
+                            <option value="Emmanuel">EMMANUEL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="table_number">Número de Mesa</label>
+                        <input type="number" id="table_number" name="table_number" inputmode="numeric" pattern="[0-9]*" maxlength="3" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Entregar al Cliente</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Pantalla 2: Selección de Propina (Cliente) -->
+        <section id="customer-screen" class="screen">
+            <div class="card">
+                <h1>Gracias por su visita</h1>
+                <p>Su mesero, <strong id="waiter-name-placeholder"></strong>, agradece su preferencia. ¿Qué Propina desea dejar?</p>
+                <div class="tip-options">
+                    <button class="btn btn-tip" data-percentage="20">20%</button>
+                    <button class="btn btn-tip" data-percentage="23">23%</button>
+                    <button class="btn btn-tip" data-percentage="25">25%</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pantalla 3: Agradecimiento -->
+        <section id="thanks-screen" class="screen">
+            <div class="card animation-card">
+                <div class="success-animation">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                <h1>¡Gracias!</h1>
+                <p>Su propina ha sido registrada.<br>¡Esperamos verlo de nuevo pronto!</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
