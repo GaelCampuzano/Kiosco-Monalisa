@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const loginErrorMessage = document.getElementById('login-error-message');
-    const mainContent = document.getElementById('main-content');
     const tipsTbody = document.getElementById('tips-tbody');
     const filterForm = document.getElementById('filter-form');
     const loader = document.getElementById('loader');
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const averageTipSpan = document.getElementById('average-tip');
     const exportCsvBtn = document.getElementById('export-csv-btn');
     const logoutBtn = document.getElementById('logout-btn');
+    const dashboardContainer = document.querySelector('.container');
 
     // 1. Verificar si hay una sesión activa al cargar la página
     try {
@@ -32,20 +32,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             showLoginModal();
         }
     } catch (error) {
+        console.error('Error al verificar sesión:', error);
         showLoginModal();
     }
 
     // Funciones auxiliares para mostrar/ocultar elementos
     function showDashboard() {
         loginModalOverlay.classList.add('hidden');
-        mainContent.style.visibility = 'visible';
-        logoutBtn.classList.remove('hidden');
+        dashboardContainer.classList.remove('hidden');
     }
 
     function showLoginModal() {
         loginModalOverlay.classList.remove('hidden');
-        mainContent.style.visibility = 'hidden';
-        logoutBtn.classList.add('hidden');
+        dashboardContainer.classList.add('hidden');
     }
 
     // 2. Manejar el envío del formulario de login
@@ -96,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     usernameInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
     passwordInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
 
-    // 4. Función para cargar, renderizar y calcular datos (sin cabecera Auth)
+    // 4. Función para cargar, renderizar y calcular datos
     async function loadTips(filters = {}) {
         loader.classList.remove('hidden');
         let url = '/api/tips';
@@ -109,9 +108,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (queryString) url += `?${queryString}`;
 
         try {
-            const response = await fetch(url); // Ya no se necesita cabecera de Auth
+            const response = await fetch(url);
             if (!response.ok) {
-                if(response.status === 401) { // Sesión expirada/inválida
+                if(response.status === 401) {
                     showLoginModal();
                 }
                 throw new Error('No se pudieron cargar los datos.');
@@ -127,7 +126,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Funciones renderTable y updateTotals (sin cambios)
     function renderTable(tips) {
         tipsTbody.innerHTML = '';
         if (tips.length === 0) {
@@ -158,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 5. Manejar filtros (sin cambios)
+    // 5. Manejar filtros
     filterForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const waiterName = document.getElementById('waiter-filter').value;
@@ -172,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadTips();
     });
     
-    // 6. Manejar la exportación a CSV (sin cabecera Auth)
+    // 6. Manejar la exportación a CSV
     exportCsvBtn.addEventListener('click', async () => {
         loader.classList.remove('hidden');
 
@@ -190,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (queryString) downloadUrl += `?${queryString}`;
         
         try {
-            const response = await fetch(downloadUrl); // Ya no se necesita cabecera de Auth
+            const response = await fetch(downloadUrl);
 
             if (!response.ok) {
                 const errorData = await response.json();
