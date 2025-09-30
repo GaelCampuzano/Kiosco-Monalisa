@@ -11,7 +11,8 @@
     --color-text-light: #6c757d;
     --color-white: #ffffff;
     --color-danger: #e74c3c;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow: 0 4px
+ 12px rgba(0, 0, 0, 0.08);
 }
 
 /* =================================== */
@@ -35,6 +36,11 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
+    /* --- INICIO DE LA MEJORA --- */
+    /* Desenfoque para el fondo general del admin */
+    filter: blur(5px);
+    transform: scale(1.05); /* Evita bordes borrosos */
+    /* --- FIN DE LA MEJORA --- */
 }
 
 .container {
@@ -51,10 +57,16 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 15px 25px;
-    background-color: var(--color-white);
+    margin-bottom: 30px;
+    /* --- INICIO DE LA MEJORA --- */
+    /* Aplicar efecto cristal */
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* --- FIN DE LA MEJORA --- */
     border-radius: 12px;
     box-shadow: var(--shadow);
-    margin-bottom: 30px;
 }
 
 .header-content {
@@ -136,7 +148,13 @@ header h1 {
 /* ====      Tarjetas (Cards)     ==== */
 /* =================================== */
 .card {
-    background-color: var(--color-white);
+    /* --- INICIO DE LA MEJORA --- */
+    /* Aplicar efecto cristal */
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* --- FIN DE LA MEJORA --- */
     border-radius: 12px;
     box-shadow: var(--shadow);
     padding: 25px;
@@ -166,7 +184,13 @@ header h1 {
     margin-bottom: 25px;
 }
 .metric-card {
-    background: var(--color-white);
+    /* --- INICIO DE LA MEJORA --- */
+    /* Aplicar efecto cristal */
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* --- FIN DE LA MEJORA --- */
     display: flex;
     align-items: center;
     padding: 25px;
@@ -316,7 +340,13 @@ tbody td {
 }
 
 .login-modal {
-    background-color: rgba(255, 255, 255, 0.95);
+    /* --- INICIO DE LA MEJORA --- */
+    /* Aplicar efecto cristal */
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* --- FIN DE LA MEJORA --- */
     padding: 40px;
     border-radius: 12px;
     width: 100%;

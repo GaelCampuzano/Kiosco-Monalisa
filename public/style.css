@@ -11,7 +11,7 @@
     --color-text-light: #6c757d;
     --color-white: #ffffff;
     --color-success: #28a745;
-    --color-danger: #e74c3c; /* Color para errores */
+    --color-danger: #e74c3c;
     --font-family: 'Montserrat', sans-serif;
     --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
@@ -19,20 +19,32 @@
 /* =================================== */
 /* ====     Estilos Generales     ==== */
 /* =================================== */
-body, html {
+html {
+    /* Mueve la imagen de fondo al nivel más bajo */
+    background-image: url(/assets/bkg.jpg);
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 100%;
+}
+
+body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     font-family: var(--font-family);
-    background-color: var(--color-background);
+    color: var(--color-text);
+    
+    /* Centra el contenido */
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--color-text);
-    background-image: url(/assets/bkg.jpg);
-    background-size: cover;
-    background-position: center;
+
+    /* Aplica el efecto de cristal al fondo general */
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 #app-container {
@@ -66,14 +78,15 @@ body, html {
 /* ====   Tarjeta Principal       ==== */
 /* =================================== */
 .card {
-    background-color: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Efecto de cristal esmerilado para TODAS las tarjetas */
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
     padding: 40px;
     box-shadow: var(--shadow);
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .logo {
@@ -102,7 +115,7 @@ p {
 .form-group {
     margin-bottom: 25px;
     text-align: left;
-    position: relative; /* Necesario para posicionar el mensaje de error */
+    position: relative;
 }
 
 .form-group label {
@@ -133,14 +146,13 @@ p {
     box-shadow: 0 0 0 4px rgba(147, 119, 55, 0.1);
 }
 
-/* Estilo para mensajes de error */
 .error-message {
     color: var(--color-danger);
     font-size: 0.9rem;
     font-weight: 500;
-    display: block;
+    display: none; /* Oculto por defecto */
     margin-top: 6px;
-    min-height: 1.2em; /* Evita que el layout salte */
+    min-height: 1.2em;
 }
 
 
@@ -157,7 +169,7 @@ p {
     transition: all 0.2s ease;
     width: 100%;
     letter-spacing: 0.5px;
-    margin-top: 10px; /* Espacio extra arriba del botón */
+    margin-top: 10px;
 }
 
 .btn:hover {
@@ -173,7 +185,6 @@ p {
     background-color: #2c4a6e;
 }
 
-/* Pantalla de Propinas */
 .tip-options {
     display: flex;
     flex-direction: column;

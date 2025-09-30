@@ -1,27 +1,22 @@
 /**
- * Kiosco Público de Propinas
+ * Kiosco Público de Propinas v2.2 (Final)
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Función de ayuda para cambiar de pantalla
-    const showScreen = (screenId) => {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById(screenId).classList.add('active');
-    };
-
-    // Referencias a elementos del DOM para fácil acceso
     const DOMElements = {
+        screens: document.querySelectorAll('.screen'),
+        waiterScreen: document.getElementById('waiter-screen'),
+        customerScreen: document.getElementById('customer-screen'),
+        thanksScreen: document.getElementById('thanks-screen'),
         waiterForm: document.getElementById('waiter-form'),
         waiterNameSelect: document.getElementById('waiter_name'),
         tableNumberInput: document.getElementById('table_number'),
-        waiterNamePlaceholder: document.getElementById('waiter-name-placeholder'),
-        tipOptionsContainer: document.querySelector('.tip-options'),
         waiterNameError: document.getElementById('waiter-name-error'),
         tableNumberError: document.getElementById('table-number-error'),
+        submitButton: document.querySelector('#waiter-form button'),
+        waiterNamePlaceholder: document.getElementById('waiter-name-placeholder'),
+        tipOptionsContainer: document.querySelector('.tip-options'),
     };
 
-    // Estado centralizado de la aplicación
     const appState = {
         waiter_name: '',
         table_number: '',
@@ -29,29 +24,50 @@ document.addEventListener('DOMContentLoaded', () => {
         device_id: `kiosk-${Date.now()}`
     };
 
-    // Objeto principal de la aplicación
     const app = {
-        init: () => {
-            app.addEventListeners();
-            showScreen('waiter-screen');
+        init() {
+            this.addEventListeners();
+            this.loadWaiters();
+            this.showScreen('waiter-screen');
         },
 
-        addEventListeners: () => {
-            DOMElements.waiterForm.addEventListener('submit', app.handleFormSubmit);
-            DOMElements.tipOptionsContainer.addEventListener('click', app.handleTipSelection);
-            DOMElements.waiterNameSelect.addEventListener('change', () => DOMElements.waiterNameError.textContent = '');
-            DOMElements.tableNumberInput.addEventListener('input', () => DOMElements.tableNumberError.textContent = '');
+        showScreen(screenId) {
+            DOMElements.screens.forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
         },
 
-        handleFormSubmit: (event) => {
+        addEventListeners() {
+            DOMElements.waiterForm.addEventListener('submit', this.handleFormSubmit.bind(this));
+            DOMElements.tipOptionsContainer.addEventListener('click', this.handleTipSelection.bind(this));
+            DOMElements.waiterNameSelect.addEventListener('change', () => this.validateField(DOMElements.waiterNameSelect.value !== '', DOMElements.waiterNameError, 'Por favor, selecciona tu nombre.'));
+            DOMElements.tableNumberInput.addEventListener('input', () => this.validateField(DOMElements.tableNumberInput.value.trim() !== '', DOMElements.tableNumberError, 'Por favor, ingresa el número de mesa.'));
+        },
+
+        async loadWaiters() {
+            try {
+                const waiters = await apiClient.getWaiters();
+                DOMElements.waiterNameSelect.innerHTML = '<option value="" disabled selected>-- Selecciona tu usuario --</option>';
+                waiters.forEach(waiter => {
+                    const option = document.createElement('option');
+                    option.value = waiter.name;
+                    option.textContent = waiter.name.toUpperCase();
+                    DOMElements.waiterNameSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar la lista de meseros:', error);
+                this.showError(DOMElements.waiterNameError, 'No se pudo cargar la lista de meseros.');
+            }
+        },
+
+        handleFormSubmit(event) {
             event.preventDefault();
             const waiterName = DOMElements.waiterNameSelect.value;
-            const tableNumber = DOMElements.tableNumberInput.value;
-            
-            // Validar ambos campos antes de continuar
-            const isWaiterValid = app.validateField(waiterName !== '0', DOMElements.waiterNameError, 'Por favor, selecciona tu nombre.');
-            const isTableValid = app.validateField(tableNumber, DOMElements.tableNumberError, 'Por favor, ingresa el número de mesa.') &&
-                                 app.validateField(/^\d+$/.test(tableNumber), DOMElements.tableNumberError, 'La mesa solo debe contener números.');
+            const tableNumber = DOMElements.tableNumberInput.value.trim();
+
+            const isWaiterValid = this.validateField(waiterName, DOMElements.waiterNameError, 'Por favor, selecciona tu nombre.');
+            const isTableValid = this.validateField(tableNumber, DOMElements.tableNumberError, 'Por favor, ingresa el número de mesa.');
 
             if (!isWaiterValid || !isTableValid) return;
 
@@ -59,33 +75,43 @@ document.addEventListener('DOMContentLoaded', () => {
             appState.table_number = tableNumber;
 
             DOMElements.waiterNamePlaceholder.textContent = appState.waiter_name;
-            showScreen('customer-screen');
+            this.showScreen('customer-screen');
         },
         
-        validateField: (condition, errorElement, message) => {
+        validateField(condition, errorElement, message) {
             errorElement.textContent = condition ? '' : message;
-            return condition;
+            errorElement.style.display = condition ? 'none' : 'block';
+            return !!condition;
+        },
+        
+        showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
         },
 
-        handleTipSelection: (event) => {
+        handleTipSelection(event) {
             if (event.target.classList.contains('btn-tip')) {
                 appState.tip_percentage = parseInt(event.target.dataset.percentage, 10);
-                app.sendTipData();
+                this.sendTipData();
             }
         },
 
-        sendTipData: async () => {
+        async sendTipData() {
             try {
-                // apiClient está disponible globalmente desde apiClient.js
                 await apiClient.sendTip(appState);
-                showScreen('thanks-screen');
+                this.showScreen('thanks-screen');
                 setTimeout(() => {
-                    showScreen('waiter-screen');
+                    this.showScreen('waiter-screen');
                     DOMElements.waiterForm.reset();
                 }, 4000);
             } catch (error) {
                 console.error('Error al enviar la propina:', error.message);
-                alert('Hubo un problema de conexión. Por favor, intente de nuevo.');
+                const customerCard = DOMElements.customerScreen.querySelector('.card');
+                const p = customerCard.querySelector('p');
+                p.innerHTML = `<span style="color: var(--color-danger);">Hubo un problema de conexión. Por favor, intenta de nuevo.</span>`;
+                setTimeout(() => {
+                    p.innerHTML = `Su mesero, <strong id="waiter-name-placeholder">${appState.waiter_name}</strong>, agradece su preferencia. ¿Qué Propina desea dejar?`;
+                }, 3000);
             }
         }
     };

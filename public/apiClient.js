@@ -1,28 +1,36 @@
 /**
  * =============================================================
- * API Client
+ * API Client v2.0
  * -------------------------------------------------------------
  * Centraliza todas las llamadas fetch a la API del backend.
+ * Adaptado para autenticación por sesión.
  * =============================================================
  */
 
 async function handleResponse(response) {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData.error || `Error ${response.status}: ${response.statusText}`;
-    throw new Error(errorMessage);
-  }
-  if (response.status === 204) {
-    return null;
-  }
   // Si la respuesta es un CSV, no la procesamos como JSON
   if (response.headers.get('Content-Type')?.includes('text/csv')) {
+      if (!response.ok) {
+          // Si hay un error, el backend puede enviar JSON
+          return response.json().then(errorData => {
+              throw new Error(errorData.error || `Error ${response.status}`);
+          });
+      }
       return response;
   }
-  return response.json();
+  
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const errorMessage = data?.error || `Error ${response.status}: ${response.statusText}`;
+    throw new Error(errorMessage);
+  }
+  
+  return data;
 }
 
 const apiClient = {
+  // --- Sesión ---
   checkSession: () => {
     return fetch('/api/session').then(handleResponse);
   },
@@ -39,6 +47,7 @@ const apiClient = {
     return fetch('/api/logout', { method: 'POST' }).then(handleResponse);
   },
 
+  // --- Datos ---
   getTips: (filters = {}) => {
     const params = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)));
     const url = `/api/tips?${params.toString()}`;
@@ -52,25 +61,14 @@ const apiClient = {
       body: JSON.stringify(tipData),
     }).then(handleResponse);
   },
+  
+  getWaiters: () => {
+    return fetch('/api/waiters').then(handleResponse);
+  },
 
-  /**
-   * Descarga el reporte de propinas en formato CSV.
-   * Apunta a la ruta correcta del backend: /api/tips/csv
-   */
   downloadTipsCsv: (filters = {}) => {
     const params = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)));
-    // URL CORREGIDA para coincidir con routes/api.js
-    const url = `/api/tips/csv?${params.toString()}`; 
-    
-    return fetch(url).then(response => {
-        if (!response.ok) {
-            // Si hay un error, el backend puede enviar JSON
-            return response.json().then(errorData => {
-                throw new Error(errorData.error || `Error ${response.status}`);
-            });
-        }
-        // Si todo va bien, devolvemos el objeto response para procesar el blob
-        return response;
-    });
+    const url = `/api/tips/csv?${params.toString()}`;
+    return fetch(url).then(handleResponse);
   }
 };

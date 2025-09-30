@@ -1,12 +1,16 @@
 /**
- * Dashboard de Administración - Versión Simplificada
+ * Dashboard de Administración - v2.0
+ * -------------------------------------------------------------
+ * Mejoras:
+ * - Lógica de autenticación por sesión.
+ * - Carga de datos después de verificar la sesión.
+ * - Manejo de errores más robusto.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Objeto para centralizar todas las referencias al DOM
+    // --- Referencias al DOM ---
     const UI = {
         container: document.querySelector('.container'),
         loader: document.getElementById('loader'),
-        // Login
         login: {
             overlay: document.getElementById('login-modal-overlay'),
             form: document.getElementById('login-form'),
@@ -14,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
             password: document.getElementById('password'),
             errorMessage: document.getElementById('login-error-message'),
         },
-        // Filtros y Exportación
         filters: {
             form: document.getElementById('filter-form'),
             waiter: document.getElementById('waiter-filter'),
@@ -27,22 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
             btn: document.getElementById('export-csv-btn'),
             errorMessage: document.getElementById('export-error-message'),
         },
-        // Datos y Tabla
         tableBody: document.getElementById('tips-tbody'),
         totalRecords: document.getElementById('total-records'),
         averageTip: document.getElementById('average-tip'),
         logoutBtn: document.getElementById('logout-btn'),
     };
 
-    // Funciones de utilidad
+    // --- Funciones de Utilidad ---
     const utils = {
         toggle: (element, show) => element.classList.toggle('hidden', !show),
         showError: (element, message, duration = 4000) => {
             element.textContent = message;
             utils.toggle(element, true);
-            setTimeout(() => utils.toggle(element, false), duration);
+            setTimeout(() => {
+                element.textContent = '';
+                utils.toggle(element, false);
+            }, duration);
         },
-        renderTable: (tips) => {
+        renderTable(tips) {
             const rowsHtml = tips.length > 0
                 ? tips.map(tip => `
                     <tr>
@@ -55,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<tr><td colspan="5">No se encontraron registros.</td></tr>';
             UI.tableBody.innerHTML = rowsHtml;
         },
-        renderTotals: (tips) => {
+        renderTotals(tips) {
             const total = tips.length;
             UI.totalRecords.textContent = total;
             if (total > 0) {
@@ -73,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }),
     };
 
-    // Lógica principal de la aplicación
+    // --- Lógica de la Aplicación ---
     const app = {
         init() {
             this.addEventListeners();
@@ -81,11 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         addEventListeners() {
-            UI.login.form.addEventListener('submit', this.handleLogin);
-            UI.logoutBtn.addEventListener('click', this.handleLogout);
-            UI.filters.form.addEventListener('submit', this.handleFilter);
-            UI.filters.resetBtn.addEventListener('click', this.handleResetFilters);
-            UI.export.btn.addEventListener('click', this.handleExport);
+            UI.login.form.addEventListener('submit', this.handleLogin.bind(this));
+            UI.logoutBtn.addEventListener('click', this.handleLogout.bind(this));
+            UI.filters.form.addEventListener('submit', this.handleFilter.bind(this));
+            UI.filters.resetBtn.addEventListener('click', this.handleResetFilters.bind(this));
+            UI.export.btn.addEventListener('click', this.handleExport.bind(this));
         },
         
         async runAsync(task) {
@@ -121,15 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
 
-        loadTips: async (filters = {}) => {
-            await app.runAsync(async () => {
+        async loadTips(filters = {}) {
+            await this.runAsync(async () => {
                 try {
                     const tips = await apiClient.getTips(filters);
                     utils.renderTable(tips);
                     utils.renderTotals(tips);
                 } catch (error) {
                     if (error.message.includes('401')) { // No autorizado
-                        app.showDashboard(false);
+                        this.showDashboard(false);
                     } else {
                         utils.showError(UI.filters.errorMessage, 'Error al cargar los datos.');
                     }
@@ -137,49 +142,53 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
 
-        handleLogin: async (e) => {
+        async handleLogin(e) {
             e.preventDefault();
             utils.toggle(UI.login.errorMessage, false);
-            await app.runAsync(async () => {
+            await this.runAsync(async () => {
                 try {
                     await apiClient.login(UI.login.username.value, UI.login.password.value);
-                    app.showDashboard(true);
-                    await app.loadTips();
+                    this.showDashboard(true);
+                    await this.loadTips();
                 } catch (error) {
                     utils.showError(UI.login.errorMessage, error.message);
                 }
             });
         },
 
-        handleLogout: async () => {
-            await app.runAsync(async () => {
+        async handleLogout() {
+            await this.runAsync(async () => {
                 try {
                     await apiClient.logout();
-                    app.showDashboard(false);
+                    this.showDashboard(false);
+                    // Limpiar el dashboard por seguridad
+                    utils.renderTable([]);
+                    utils.renderTotals([]);
+                    UI.filters.form.reset();
                 } catch {
-                    app.showDashboard(false);
+                    // Si falla, al menos oculta el dashboard
+                    this.showDashboard(false);
                 }
             });
         },
         
-        handleFilter: (e) => {
+        handleFilter(e) {
             e.preventDefault();
             const filters = utils.getFilters();
             if (filters.startDate && filters.endDate && new Date(filters.startDate) > new Date(filters.endDate)) {
                 utils.showError(UI.filters.errorMessage, 'La fecha de inicio no puede ser posterior a la de fin.');
                 return;
             }
-            app.loadTips(filters);
+            this.loadTips(filters);
         },
 
-        handleResetFilters: () => {
+        handleResetFilters() {
             UI.filters.form.reset();
-            utils.toggle(UI.filters.errorMessage, false);
-            app.loadTips();
+            this.loadTips();
         },
 
-        handleExport: async () => {
-            await app.runAsync(async () => {
+        async handleExport() {
+            await this.runAsync(async () => {
                 try {
                     const response = await apiClient.downloadTipsCsv(utils.getFilters());
                     const blob = await response.blob();
