@@ -62,7 +62,23 @@
         </section>
     </div>
 
+    <script src="indexedDB.js"></script>
     <script src="apiClient.js"></script>
     <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    }).catch(error => {
+                        console.log('Fallo en el registro del Service Worker:', error);
+                    });
+            });
+        } else {
+            console.log('Service Worker o Background Sync no son soportados por este navegador.');
+        }
+    </script>
 </body>
 </html>

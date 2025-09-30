@@ -98,19 +98,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async sendTipData() {
             try {
-                await apiClient.sendTip(appState);
+                // Comprobar si el navegador está online
+                if (navigator.onLine) {
+                    await apiClient.sendTip(appState);
+                    console.log('Propina enviada directamente al servidor.');
+                } else {
+                    // Si está offline, guardar en IndexedDB
+                    await saveTipOffline(appState);
+                    
+                    // Registrar un evento de sincronización
+                    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                        const registration = await navigator.serviceWorker.ready;
+                        await registration.sync.register('sync-new-tips');
+                    }
+                }
+
                 this.showScreen('thanks-screen');
                 setTimeout(() => {
                     this.showScreen('waiter-screen');
                     DOMElements.waiterForm.reset();
                 }, 4000);
+
             } catch (error) {
-                console.error('Error al enviar la propina:', error.message);
+                console.error('Error al gestionar la propina:', error.message);
                 const customerCard = DOMElements.customerScreen.querySelector('.card');
                 const p = customerCard.querySelector('p');
-                p.innerHTML = `<span style="color: var(--color-danger);">Hubo un problema de conexión. Por favor, intenta de nuevo.</span>`;
+                p.innerHTML = `<span style="color: var(--color-danger);">Hubo un problema. Se guardó para enviar más tarde.</span>`;
                 setTimeout(() => {
-                    p.innerHTML = `Su mesero, <strong id="waiter-name-placeholder">${appState.waiter_name}</strong>, agradece su preferencia. ¿Qué Propina desea dejar?`;
+                     // Restaurar el estado de la UI incluso si hubo un error de red
+                    this.showScreen('thanks-screen');
+                    setTimeout(() => {
+                        this.showScreen('waiter-screen');
+                        DOMElements.waiterForm.reset();
+                    }, 4000);
                 }, 3000);
             }
         }
