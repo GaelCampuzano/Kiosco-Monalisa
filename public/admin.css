@@ -378,6 +378,7 @@ tbody td {
     justify-content: center;
 }
 
+/* Mensajes de error */
 .error-message {
     color: var(--color-danger);
     background-color: #fadbd8;
@@ -387,6 +388,14 @@ tbody td {
     text-align: center;
     margin-bottom: 15px;
     font-size: 14px;
+}
+
+.form-error-message {
+    color: var(--color-danger);
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 15px;
+    text-align: center;
 }
 
 .loader-overlay {

@@ -17,7 +17,7 @@
                 <img src="/assets/Sunset-Monalisa-logo@2x_color.svg" alt="Logo Sunset Monalisa" class="logo">
                 <h1>Bienvenido</h1>
                 <p>Por favor, ingresa tus datos para continuar.</p>
-                <form id="waiter-form">
+                <form id="waiter-form" novalidate>
                     <div class="form-group">
                         <label for="waiter_name">Tu Nombre</label>
                         <select name="waiter_name" id="waiter_name" required>
@@ -33,6 +33,7 @@
                     <div class="form-group">
                         <label for="table_number">Número de Mesa</label>
                         <input type="text" id="table_number" name="table_number" inputmode="numeric" pattern="[0-9]*" maxlength="3" required>
+                        <span class="error-message" id="table-number-error"></span>
                     </div>
                     <button type="submit" class="btn btn-primary">Entregar al Cliente</button>
                 </form>

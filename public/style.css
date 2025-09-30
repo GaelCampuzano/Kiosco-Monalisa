@@ -11,6 +11,7 @@
     --color-text-light: #6c757d;
     --color-white: #ffffff;
     --color-success: #28a745;
+    --color-danger: #e74c3c; /* Color para errores */
     --font-family: 'Montserrat', sans-serif;
     --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
@@ -101,6 +102,7 @@ p {
 .form-group {
     margin-bottom: 25px;
     text-align: left;
+    position: relative; /* Necesario para posicionar el mensaje de error */
 }
 
 .form-group label {
@@ -131,6 +133,17 @@ p {
     box-shadow: 0 0 0 4px rgba(147, 119, 55, 0.1);
 }
 
+/* Estilo para mensajes de error */
+.error-message {
+    color: var(--color-danger);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: block;
+    margin-top: 6px;
+    min-height: 1.2em; /* Evita que el layout salte */
+}
+
+
 /* =================================== */
 /* ====         Botones           ==== */
 /* =================================== */
@@ -144,6 +157,7 @@ p {
     transition: all 0.2s ease;
     width: 100%;
     letter-spacing: 0.5px;
+    margin-top: 10px; /* Espacio extra arriba del botón */
 }
 
 .btn:hover {
@@ -173,6 +187,7 @@ p {
     font-size: 1.8rem;
     font-weight: 500;
     padding: 20px;
+    margin: 0;
 }
 
 .btn-tip:hover {

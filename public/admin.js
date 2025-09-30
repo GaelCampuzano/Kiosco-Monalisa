@@ -1,220 +1,201 @@
 /**
  * Dashboard de Administración
- * - Maneja autenticación via Sesiones
- * - Carga y renderiza registros con filtros
- * - Calcula métricas básicas (conteo y promedio)
- * - Exporta datos filtrados a CSV
  */
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
+    // Funciones de Ayuda
+    const toggleElement = (element, show) => element.classList.toggle('hidden', !show);
+    const showTemporaryError = (element, message, duration = 5000) => {
+        element.textContent = message;
+        toggleElement(element, true);
+        setTimeout(() => toggleElement(element, false), duration);
+    };
+
     // Referencias a elementos del DOM
-    const loginModalOverlay = document.getElementById('login-modal-overlay');
-    const loginForm = document.getElementById('login-form');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const loginErrorMessage = document.getElementById('login-error-message');
-    const tipsTbody = document.getElementById('tips-tbody');
-    const filterForm = document.getElementById('filter-form');
-    const loader = document.getElementById('loader');
-    const totalRecordsSpan = document.getElementById('total-records');
-    const averageTipSpan = document.getElementById('average-tip');
-    const exportCsvBtn = document.getElementById('export-csv-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const dashboardContainer = document.querySelector('.container');
+    const DOMElements = {
+        loginModalOverlay: document.getElementById('login-modal-overlay'),
+        loginForm: document.getElementById('login-form'),
+        usernameInput: document.getElementById('username'),
+        passwordInput: document.getElementById('password'),
+        loginErrorMessage: document.getElementById('login-error-message'),
+        tipsTbody: document.getElementById('tips-tbody'),
+        filterForm: document.getElementById('filter-form'),
+        filterErrorMessage: document.getElementById('filter-error-message'),
+        startDateInput: document.getElementById('start-date-filter'),
+        endDateInput: document.getElementById('end-date-filter'),
+        loader: document.getElementById('loader'),
+        totalRecordsSpan: document.getElementById('total-records'),
+        averageTipSpan: document.getElementById('average-tip'),
+        exportCsvBtn: document.getElementById('export-csv-btn'),
+        exportErrorMessage: document.getElementById('export-error-message'),
+        logoutBtn: document.getElementById('logout-btn'),
+        dashboardContainer: document.querySelector('.container'),
+        resetFiltersBtn: document.getElementById('reset-filters-btn'),
+        waiterFilterInput: document.getElementById('waiter-filter'),
+    };
 
-    // 1. Verificar si hay una sesión activa al cargar la página
-    try {
-        const response = await fetch('/api/session');
-        const data = await response.json();
-        if (data.loggedIn) {
-            showDashboard();
-            await loadTips();
-        } else {
-            showLoginModal();
-        }
-    } catch (error) {
-        console.error('Error al verificar sesión:', error);
-        showLoginModal();
-    }
-
-    // Funciones auxiliares para mostrar/ocultar elementos
-    function showDashboard() {
-        loginModalOverlay.classList.add('hidden');
-        dashboardContainer.classList.remove('hidden');
-    }
-
-    function showLoginModal() {
-        loginModalOverlay.classList.remove('hidden');
-        dashboardContainer.classList.add('hidden');
-    }
-
-    // 2. Manejar el envío del formulario de login
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = usernameInput.value;
-        const password = passwordInput.value;
-        
-        loader.classList.remove('hidden');
-
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (response.ok) {
-                showDashboard();
-                await loadTips();
-            } else {
-                const data = await response.json();
-                loginErrorMessage.textContent = data.error || 'Credenciales incorrectas.';
-                loginErrorMessage.classList.remove('hidden');
-            }
-        } catch (error) {
-            loginErrorMessage.textContent = 'No se pudo conectar con el servidor.';
-            loginErrorMessage.classList.remove('hidden');
-        } finally {
-            loader.classList.add('hidden');
-        }
-    });
-
-    // 3. Manejar el botón de cerrar sesión
-    logoutBtn.addEventListener('click', async () => {
-        loader.classList.remove('hidden');
-        try {
-            await fetch('/api/logout', { method: 'POST' });
-            showLoginModal();
-        } catch (error) {
-            alert('Error al cerrar la sesión.');
-        } finally {
-            loader.classList.add('hidden');
-        }
-    });
-    
-    // Ocultar mensaje de error al escribir
-    usernameInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
-    passwordInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
-
-    // 4. Función para cargar, renderizar y calcular datos
-    async function loadTips(filters = {}) {
-        loader.classList.remove('hidden');
-        let url = '/api/tips';
-        const params = new URLSearchParams();
-        if (filters.waiterName) params.append('waiterName', filters.waiterName);
-        if (filters.startDate) params.append('startDate', filters.startDate);
-        if (filters.endDate) params.append('endDate', filters.endDate);
-        
-        const queryString = params.toString();
-        if (queryString) url += `?${queryString}`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                if(response.status === 401) {
-                    showLoginModal();
+    // Objeto principal de la aplicación
+    const app = {
+        init: async () => {
+            app.addEventListeners();
+            try {
+                const session = await apiClient.checkSession();
+                if (session.loggedIn) {
+                    app.showDashboard(true);
+                    await app.loadTips();
+                } else {
+                    app.showDashboard(false);
                 }
-                throw new Error('No se pudieron cargar los datos.');
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                app.showDashboard(false);
             }
-            const tips = await response.json();
-            renderTable(tips);
-            updateTotals(tips);
-        } catch (error) {
-            console.error('Error al cargar propinas:', error);
-            tipsTbody.innerHTML = `<tr><td colspan="5">Error al cargar los datos.</td></tr>`;
-        } finally {
-            loader.classList.add('hidden');
-        }
-    }
+        },
 
-    function renderTable(tips) {
-        tipsTbody.innerHTML = '';
-        if (tips.length === 0) {
-            tipsTbody.innerHTML = '<tr><td colspan="5">No se encontraron registros.</td></tr>';
-            return;
-        }
-        tips.forEach(tip => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${tip.id}</td>
-                <td>${tip.table_number}</td>
-                <td>${tip.waiter_name}</td>
-                <td>${tip.tip_percentage}%</td>
-                <td>${new Date(tip.created_at).toLocaleString()}</td>
-            `;
-            tipsTbody.appendChild(row);
-        });
-    }
+        addEventListeners: () => {
+            DOMElements.loginForm.addEventListener('submit', app.handleLogin);
+            DOMElements.logoutBtn.addEventListener('click', app.handleLogout);
+            DOMElements.filterForm.addEventListener('submit', app.handleFilter);
+            DOMElements.resetFiltersBtn.addEventListener('click', app.handleResetFilters);
+            DOMElements.exportCsvBtn.addEventListener('click', app.handleExport);
+            
+            // Ocultar errores al escribir
+            [DOMElements.usernameInput, DOMElements.passwordInput].forEach(input => 
+                input.addEventListener('input', () => toggleElement(DOMElements.loginErrorMessage, false))
+            );
+            [DOMElements.startDateInput, DOMElements.endDateInput].forEach(input =>
+                input.addEventListener('input', () => toggleElement(DOMElements.filterErrorMessage, false))
+            );
+        },
 
-    function updateTotals(tips) {
-        totalRecordsSpan.textContent = tips.length;
-        if (tips.length > 0) {
-            const totalTip = tips.reduce((sum, tip) => sum + tip.tip_percentage, 0);
-            const average = (totalTip / tips.length).toFixed(2);
-            averageTipSpan.textContent = `${average}%`;
-        } else {
-            averageTipSpan.textContent = '0%';
-        }
-    }
+        showDashboard: (show) => {
+            toggleElement(DOMElements.loginModalOverlay, !show);
+            toggleElement(DOMElements.dashboardContainer, show);
+        },
 
-    // 5. Manejar filtros
-    filterForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const waiterName = document.getElementById('waiter-filter').value;
-        const startDate = document.getElementById('start-date-filter').value;
-        const endDate = document.getElementById('end-date-filter').value;
-        loadTips({ waiterName, startDate, endDate });
-    });
+        handleLogin: async (e) => {
+            e.preventDefault();
+            toggleElement(DOMElements.loader, true);
+            try {
+                await apiClient.login(DOMElements.usernameInput.value, DOMElements.passwordInput.value);
+                app.showDashboard(true);
+                await app.loadTips();
+            } catch (error) {
+                DOMElements.loginErrorMessage.textContent = error.message;
+                toggleElement(DOMElements.loginErrorMessage, true);
+            } finally {
+                toggleElement(DOMElements.loader, false);
+            }
+        },
 
-    document.getElementById('reset-filters-btn').addEventListener('click', () => {
-        filterForm.reset();
-        loadTips();
-    });
-    
-    // 6. Manejar la exportación a CSV
-    exportCsvBtn.addEventListener('click', async () => {
-        loader.classList.remove('hidden');
+        handleLogout: async () => {
+            toggleElement(DOMElements.loader, true);
+            try {
+                await apiClient.logout();
+                app.showDashboard(false);
+            } catch (error) {
+                showTemporaryError(DOMElements.loginErrorMessage, 'Error al cerrar la sesión.');
+            } finally {
+                toggleElement(DOMElements.loader, false);
+            }
+        },
 
-        const waiterName = document.getElementById('waiter-filter').value;
-        const startDate = document.getElementById('start-date-filter').value;
-        const endDate = document.getElementById('end-date-filter').value;
+        loadTips: async (filters = {}) => {
+            toggleElement(DOMElements.loader, true);
+            try {
+                const tips = await apiClient.getTips(filters);
+                app.render.table(tips);
+                app.render.totals(tips);
+            } catch (error) {
+                console.error('Error al cargar propinas:', error);
+                if (error.message.includes('401')) { // Si no está autorizado
+                    app.showDashboard(false);
+                } else {
+                    DOMElements.tipsTbody.innerHTML = `<tr><td colspan="5">Error al cargar los datos.</td></tr>`;
+                }
+            } finally {
+                toggleElement(DOMElements.loader, false);
+            }
+        },
 
-        const params = new URLSearchParams();
-        if (waiterName) params.append('waiterName', waiterName);
-        if (startDate) params.append('startDate', startDate);
-        if (endDate) params.append('endDate', endDate);
-        
-        const queryString = params.toString();
-        let downloadUrl = '/api/tips/csv';
-        if (queryString) downloadUrl += `?${queryString}`;
-        
-        try {
-            const response = await fetch(downloadUrl);
+        getFilters: () => ({
+            waiterName: DOMElements.waiterFilterInput.value,
+            startDate: DOMElements.startDateInput.value,
+            endDate: DOMElements.endDateInput.value,
+        }),
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                alert(`Error al exportar: ${errorData.error || response.statusText}`);
+        handleFilter: (e) => {
+            e.preventDefault();
+            const filters = app.getFilters();
+            if (filters.startDate && filters.endDate && new Date(filters.startDate) > new Date(filters.endDate)) {
+                showTemporaryError(DOMElements.filterErrorMessage, 'La fecha de inicio no puede ser posterior a la fecha de fin.');
                 return;
             }
+            app.loadTips(filters);
+        },
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'reporte_propinas.csv';
-            document.body.appendChild(a);
-            
-            a.click();
-            
-            window.URL.revokeObjectURL(url);
-            a.remove();
+        handleResetFilters: () => {
+            DOMElements.filterForm.reset();
+            toggleElement(DOMElements.filterErrorMessage, false);
+            app.loadTips();
+        },
 
-        } catch (error) {
-            console.error('Error en la descarga del CSV:', error);
-            alert('Ocurrió un error al intentar descargar el archivo.');
-        } finally {
-            loader.classList.add('hidden');
+        handleExport: async () => {
+            toggleElement(DOMElements.loader, true);
+            try {
+                const response = await apiClient.downloadTipsCsv(app.getFilters());
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Error ${response.status}`);
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'reporte_propinas.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            } catch (error) {
+                console.error('Error en la descarga del CSV:', error);
+                showTemporaryError(DOMElements.exportErrorMessage, error.message);
+            } finally {
+                toggleElement(DOMElements.loader, false);
+            }
+        },
+        
+        // Funciones de Renderizado
+        render: {
+            table: (tips) => {
+                DOMElements.tipsTbody.innerHTML = '';
+                if (tips.length === 0) {
+                    DOMElements.tipsTbody.innerHTML = '<tr><td colspan="5">No se encontraron registros.</td></tr>';
+                    return;
+                }
+                const rows = tips.map(tip => `
+                    <tr>
+                        <td>${tip.id}</td>
+                        <td>${tip.table_number}</td>
+                        <td>${tip.waiter_name}</td>
+                        <td>${tip.tip_percentage}%</td>
+                        <td>${new Date(tip.created_at).toLocaleString()}</td>
+                    </tr>`
+                ).join('');
+                DOMElements.tipsTbody.innerHTML = rows;
+            },
+            totals: (tips) => {
+                DOMElements.totalRecordsSpan.textContent = tips.length;
+                if (tips.length > 0) {
+                    const totalTip = tips.reduce((sum, tip) => sum + tip.tip_percentage, 0);
+                    const average = (totalTip / tips.length).toFixed(2);
+                    DOMElements.averageTipSpan.textContent = `${average}%`;
+                } else {
+                    DOMElements.averageTipSpan.textContent = '0%';
+                }
+            }
         }
-    });
+    };
+
+    app.init();
 });

@@ -50,7 +50,7 @@
             <div class="controls-container">
                 <div class="card filters">
                     <h2><i class="fa-solid fa-filter"></i> Filtros</h2>
-                    <form id="filter-form" class="filter-controls">
+                    <form id="filter-form" class="filter-controls" novalidate>
                         <div class="form-group">
                             <label for="waiter-filter">Nombre del Mesero</label>
                             <input type="text" id="waiter-filter" placeholder="Buscar por nombre...">
@@ -68,6 +68,7 @@
                             <button type="button" id="reset-filters-btn" class="btn btn-secondary">Limpiar</button>
                         </div>
                     </form>
+                    <div id="filter-error-message" class="form-error-message hidden"></div>
                 </div>
 
                 <div class="card export-card">
@@ -77,6 +78,7 @@
                         <i class="fa-solid fa-file-csv"></i>
                         Exportar a CSV
                     </button>
+                    <div id="export-error-message" class="form-error-message hidden"></div>
                 </div>
             </div>
 
