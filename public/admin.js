@@ -1,199 +1,201 @@
 /**
- * Dashboard de Administración
+ * Dashboard de Administración - Versión Simplificada
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Funciones de Ayuda
-    const toggleElement = (element, show) => element.classList.toggle('hidden', !show);
-    const showTemporaryError = (element, message, duration = 5000) => {
-        element.textContent = message;
-        toggleElement(element, true);
-        setTimeout(() => toggleElement(element, false), duration);
-    };
-
-    // Referencias a elementos del DOM
-    const DOMElements = {
-        loginModalOverlay: document.getElementById('login-modal-overlay'),
-        loginForm: document.getElementById('login-form'),
-        usernameInput: document.getElementById('username'),
-        passwordInput: document.getElementById('password'),
-        loginErrorMessage: document.getElementById('login-error-message'),
-        tipsTbody: document.getElementById('tips-tbody'),
-        filterForm: document.getElementById('filter-form'),
-        filterErrorMessage: document.getElementById('filter-error-message'),
-        startDateInput: document.getElementById('start-date-filter'),
-        endDateInput: document.getElementById('end-date-filter'),
+    // Objeto para centralizar todas las referencias al DOM
+    const UI = {
+        container: document.querySelector('.container'),
         loader: document.getElementById('loader'),
-        totalRecordsSpan: document.getElementById('total-records'),
-        averageTipSpan: document.getElementById('average-tip'),
-        exportCsvBtn: document.getElementById('export-csv-btn'),
-        exportErrorMessage: document.getElementById('export-error-message'),
+        // Login
+        login: {
+            overlay: document.getElementById('login-modal-overlay'),
+            form: document.getElementById('login-form'),
+            username: document.getElementById('username'),
+            password: document.getElementById('password'),
+            errorMessage: document.getElementById('login-error-message'),
+        },
+        // Filtros y Exportación
+        filters: {
+            form: document.getElementById('filter-form'),
+            waiter: document.getElementById('waiter-filter'),
+            startDate: document.getElementById('start-date-filter'),
+            endDate: document.getElementById('end-date-filter'),
+            resetBtn: document.getElementById('reset-filters-btn'),
+            errorMessage: document.getElementById('filter-error-message'),
+        },
+        export: {
+            btn: document.getElementById('export-csv-btn'),
+            errorMessage: document.getElementById('export-error-message'),
+        },
+        // Datos y Tabla
+        tableBody: document.getElementById('tips-tbody'),
+        totalRecords: document.getElementById('total-records'),
+        averageTip: document.getElementById('average-tip'),
         logoutBtn: document.getElementById('logout-btn'),
-        dashboardContainer: document.querySelector('.container'),
-        resetFiltersBtn: document.getElementById('reset-filters-btn'),
-        waiterFilterInput: document.getElementById('waiter-filter'),
     };
 
-    // Objeto principal de la aplicación
+    // Funciones de utilidad
+    const utils = {
+        toggle: (element, show) => element.classList.toggle('hidden', !show),
+        showError: (element, message, duration = 4000) => {
+            element.textContent = message;
+            utils.toggle(element, true);
+            setTimeout(() => utils.toggle(element, false), duration);
+        },
+        renderTable: (tips) => {
+            const rowsHtml = tips.length > 0
+                ? tips.map(tip => `
+                    <tr>
+                        <td>${tip.id}</td>
+                        <td>${tip.table_number}</td>
+                        <td>${tip.waiter_name}</td>
+                        <td>${tip.tip_percentage}%</td>
+                        <td>${new Date(tip.created_at).toLocaleString('es-MX')}</td>
+                    </tr>`).join('')
+                : '<tr><td colspan="5">No se encontraron registros.</td></tr>';
+            UI.tableBody.innerHTML = rowsHtml;
+        },
+        renderTotals: (tips) => {
+            const total = tips.length;
+            UI.totalRecords.textContent = total;
+            if (total > 0) {
+                const totalTip = tips.reduce((sum, tip) => sum + tip.tip_percentage, 0);
+                const average = (totalTip / total).toFixed(2);
+                UI.averageTip.textContent = `${average}%`;
+            } else {
+                UI.averageTip.textContent = '0%';
+            }
+        },
+        getFilters: () => ({
+            waiterName: UI.filters.waiter.value.trim(),
+            startDate: UI.filters.startDate.value,
+            endDate: UI.filters.endDate.value,
+        }),
+    };
+
+    // Lógica principal de la aplicación
     const app = {
-        init: async () => {
-            app.addEventListeners();
+        init() {
+            this.addEventListeners();
+            this.checkUserSession();
+        },
+        
+        addEventListeners() {
+            UI.login.form.addEventListener('submit', this.handleLogin);
+            UI.logoutBtn.addEventListener('click', this.handleLogout);
+            UI.filters.form.addEventListener('submit', this.handleFilter);
+            UI.filters.resetBtn.addEventListener('click', this.handleResetFilters);
+            UI.export.btn.addEventListener('click', this.handleExport);
+        },
+        
+        async runAsync(task) {
+            utils.toggle(UI.loader, true);
             try {
-                const session = await apiClient.checkSession();
-                if (session.loggedIn) {
-                    app.showDashboard(true);
-                    await app.loadTips();
-                } else {
-                    app.showDashboard(false);
-                }
+                await task();
             } catch (error) {
-                console.error('Error al verificar sesión:', error);
-                app.showDashboard(false);
+                console.error('Ocurrió un error:', error);
+                // El manejo de errores específico se hará en cada handler
+            } finally {
+                utils.toggle(UI.loader, false);
             }
         },
 
-        addEventListeners: () => {
-            DOMElements.loginForm.addEventListener('submit', app.handleLogin);
-            DOMElements.logoutBtn.addEventListener('click', app.handleLogout);
-            DOMElements.filterForm.addEventListener('submit', app.handleFilter);
-            DOMElements.resetFiltersBtn.addEventListener('click', app.handleResetFilters);
-            DOMElements.exportCsvBtn.addEventListener('click', app.handleExport);
-            
-            // Ocultar errores al escribir
-            [DOMElements.usernameInput, DOMElements.passwordInput].forEach(input => 
-                input.addEventListener('input', () => toggleElement(DOMElements.loginErrorMessage, false))
-            );
-            [DOMElements.startDateInput, DOMElements.endDateInput].forEach(input =>
-                input.addEventListener('input', () => toggleElement(DOMElements.filterErrorMessage, false))
-            );
+        showDashboard(show) {
+            utils.toggle(UI.login.overlay, !show);
+            utils.toggle(UI.container, show);
+        },
+        
+        async checkUserSession() {
+            await this.runAsync(async () => {
+                try {
+                    const session = await apiClient.checkSession();
+                    if (session.loggedIn) {
+                        this.showDashboard(true);
+                        await this.loadTips();
+                    } else {
+                        this.showDashboard(false);
+                    }
+                } catch {
+                    this.showDashboard(false);
+                }
+            });
         },
 
-        showDashboard: (show) => {
-            toggleElement(DOMElements.loginModalOverlay, !show);
-            toggleElement(DOMElements.dashboardContainer, show);
+        loadTips: async (filters = {}) => {
+            await app.runAsync(async () => {
+                try {
+                    const tips = await apiClient.getTips(filters);
+                    utils.renderTable(tips);
+                    utils.renderTotals(tips);
+                } catch (error) {
+                    if (error.message.includes('401')) { // No autorizado
+                        app.showDashboard(false);
+                    } else {
+                        utils.showError(UI.filters.errorMessage, 'Error al cargar los datos.');
+                    }
+                }
+            });
         },
 
         handleLogin: async (e) => {
             e.preventDefault();
-            toggleElement(DOMElements.loader, true);
-            try {
-                await apiClient.login(DOMElements.usernameInput.value, DOMElements.passwordInput.value);
-                app.showDashboard(true);
-                await app.loadTips();
-            } catch (error) {
-                DOMElements.loginErrorMessage.textContent = error.message;
-                toggleElement(DOMElements.loginErrorMessage, true);
-            } finally {
-                toggleElement(DOMElements.loader, false);
-            }
+            utils.toggle(UI.login.errorMessage, false);
+            await app.runAsync(async () => {
+                try {
+                    await apiClient.login(UI.login.username.value, UI.login.password.value);
+                    app.showDashboard(true);
+                    await app.loadTips();
+                } catch (error) {
+                    utils.showError(UI.login.errorMessage, error.message);
+                }
+            });
         },
 
         handleLogout: async () => {
-            toggleElement(DOMElements.loader, true);
-            try {
-                await apiClient.logout();
-                app.showDashboard(false);
-            } catch (error) {
-                showTemporaryError(DOMElements.loginErrorMessage, 'Error al cerrar la sesión.');
-            } finally {
-                toggleElement(DOMElements.loader, false);
-            }
-        },
-
-        loadTips: async (filters = {}) => {
-            toggleElement(DOMElements.loader, true);
-            try {
-                const tips = await apiClient.getTips(filters);
-                app.render.table(tips);
-                app.render.totals(tips);
-            } catch (error) {
-                console.error('Error al cargar propinas:', error);
-                if (error.message.includes('401')) { // Si no está autorizado
+            await app.runAsync(async () => {
+                try {
+                    await apiClient.logout();
                     app.showDashboard(false);
-                } else {
-                    DOMElements.tipsTbody.innerHTML = `<tr><td colspan="5">Error al cargar los datos.</td></tr>`;
+                } catch {
+                    app.showDashboard(false);
                 }
-            } finally {
-                toggleElement(DOMElements.loader, false);
-            }
+            });
         },
-
-        getFilters: () => ({
-            waiterName: DOMElements.waiterFilterInput.value,
-            startDate: DOMElements.startDateInput.value,
-            endDate: DOMElements.endDateInput.value,
-        }),
-
+        
         handleFilter: (e) => {
             e.preventDefault();
-            const filters = app.getFilters();
+            const filters = utils.getFilters();
             if (filters.startDate && filters.endDate && new Date(filters.startDate) > new Date(filters.endDate)) {
-                showTemporaryError(DOMElements.filterErrorMessage, 'La fecha de inicio no puede ser posterior a la fecha de fin.');
+                utils.showError(UI.filters.errorMessage, 'La fecha de inicio no puede ser posterior a la de fin.');
                 return;
             }
             app.loadTips(filters);
         },
 
         handleResetFilters: () => {
-            DOMElements.filterForm.reset();
-            toggleElement(DOMElements.filterErrorMessage, false);
+            UI.filters.form.reset();
+            utils.toggle(UI.filters.errorMessage, false);
             app.loadTips();
         },
 
         handleExport: async () => {
-            toggleElement(DOMElements.loader, true);
-            try {
-                const response = await apiClient.downloadTipsCsv(app.getFilters());
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Error ${response.status}`);
+            await app.runAsync(async () => {
+                try {
+                    const response = await apiClient.downloadTipsCsv(utils.getFilters());
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `reporte_propinas_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } catch (error) {
+                    utils.showError(UI.export.errorMessage, `Error al exportar: ${error.message}`);
                 }
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'reporte_propinas.csv';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
-            } catch (error) {
-                console.error('Error en la descarga del CSV:', error);
-                showTemporaryError(DOMElements.exportErrorMessage, error.message);
-            } finally {
-                toggleElement(DOMElements.loader, false);
-            }
-        },
-        
-        // Funciones de Renderizado
-        render: {
-            table: (tips) => {
-                DOMElements.tipsTbody.innerHTML = '';
-                if (tips.length === 0) {
-                    DOMElements.tipsTbody.innerHTML = '<tr><td colspan="5">No se encontraron registros.</td></tr>';
-                    return;
-                }
-                const rows = tips.map(tip => `
-                    <tr>
-                        <td>${tip.id}</td>
-                        <td>${tip.table_number}</td>
-                        <td>${tip.waiter_name}</td>
-                        <td>${tip.tip_percentage}%</td>
-                        <td>${new Date(tip.created_at).toLocaleString()}</td>
-                    </tr>`
-                ).join('');
-                DOMElements.tipsTbody.innerHTML = rows;
-            },
-            totals: (tips) => {
-                DOMElements.totalRecordsSpan.textContent = tips.length;
-                if (tips.length > 0) {
-                    const totalTip = tips.reduce((sum, tip) => sum + tip.tip_percentage, 0);
-                    const average = (totalTip / tips.length).toFixed(2);
-                    DOMElements.averageTipSpan.textContent = `${average}%`;
-                } else {
-                    DOMElements.averageTipSpan.textContent = '0%';
-                }
-            }
+            });
         }
     };
 
