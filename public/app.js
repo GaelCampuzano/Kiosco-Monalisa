@@ -1,8 +1,5 @@
 /**
- * Kiosco Público de Propinas
- * - Paso 1: Mesero ingresa su nombre y mesa
- * - Paso 2: Cliente selecciona porcentaje de propina
- * - Paso 3: Se envía a la API y se muestra agradecimiento
+ * Kiosco Público de Propinas (Con mejoras de UX)
  */
 document.addEventListener('DOMContentLoaded', () => {
     // Estado de la aplicación para guardar datos temporalmente
@@ -21,12 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const waiterForm = document.getElementById('waiter-form');
     const waiterNamePlaceholder = document.getElementById('waiter-name-placeholder');
     const tipOptionsContainer = document.querySelector('.tip-options');
+    const waiterNameError = document.getElementById('waiter-name-error'); // Selector para el mensaje de error
 
     // Función para cambiar entre pantallas
-    /**
-     * Activa una pantalla por id y oculta el resto.
-     * @param {"waiter-screen"|"customer-screen"|"thanks-screen"} screenId
-     */
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
@@ -34,15 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(screenId).classList.add('active');
     }
 
-    // --- LÓGICA DE LA PANTALLA DEL MESERO ---
+    // --- LÓGICA DE LA PANTALLA DEL MESERO (ACTUALIZADA) ---
     waiterForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const waiterName = document.getElementById('waiter_name').value;
+        waiterNameError.textContent = ''; // Limpiar cualquier error anterior
 
-        // **Validación para el selector de usuario**
+        // **Validación mejorada para el selector de usuario**
         if (waiterName === '0') {
-            alert('Por favor, selecciona un usuario antes de continuar.');
-            return; // detiene la ejecución si no se ha seleccionado un usuario
+            waiterNameError.textContent = 'Por favor, selecciona un nombre.'; // Muestra el error en el span
+            return; // Detiene la ejecución
         }
 
         appState.waiter_name = waiterName;
@@ -52,54 +47,41 @@ document.addEventListener('DOMContentLoaded', () => {
         waiterNamePlaceholder.textContent = appState.waiter_name;
         showScreen('customer-screen');
     });
+    
+    // Ocultar mensaje de error al cambiar la selección
+    document.getElementById('waiter_name').addEventListener('change', () => {
+        waiterNameError.textContent = '';
+    });
+
 
     // --- LÓGICA DE LA PANTALLA DEL CLIENTE ---
     tipOptionsContainer.addEventListener('click', (event) => {
         if (event.target.classList.contains('btn-tip')) {
             const percentage = parseInt(event.target.dataset.percentage, 10);
             appState.tip_percentage = percentage;
-
-            // Enviar los datos al servidor
             sendTipData();
         }
     });
 
     // --- FUNCIÓN PARA COMUNICARSE CON LA API ---
-    /**
-     * Envía datos del kiosco a POST /api/tips y gestiona transiciones.
-     */
     async function sendTipData() {
         console.log('Enviando propina:', appState);
         try {
-            const response = await fetch('/api/tips', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    table_number: appState.table_number,
-                    waiter_name: appState.waiter_name,
-                    tip_percentage: appState.tip_percentage,
-                    device_id: appState.device_id
-                }),
+            const result = await apiClient.sendTip({
+                table_number: appState.table_number,
+                waiter_name: appState.waiter_name,
+                tip_percentage: appState.tip_percentage,
+                device_id: appState.device_id
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error en la respuesta del servidor');
-            }
-
-            const result = await response.json();
+            
             console.log('Respuesta del servidor:', result);
 
-            // Transición a la pantalla de agradecimiento
             showScreen('thanks-screen');
 
-            // --- NUEVO: Resetear la aplicación después de un tiempo ---
             setTimeout(() => {
                 showScreen('waiter-screen');
-                waiterForm.reset(); // Limpiar el formulario para el siguiente uso
-            }, 4000); // 4000 milisegundos = 4 segundos
+                waiterForm.reset();
+            }, 4000);
 
         } catch (error) {
             console.error('Error al enviar la propina:', error.message);
