@@ -1,11 +1,11 @@
 /**
  * Dashboard de Administración
- * - Maneja autenticación via Basic Auth (modal)
+ * - Maneja autenticación via Sesiones
  * - Carga y renderiza registros con filtros
  * - Calcula métricas básicas (conteo y promedio)
  * - Exporta datos filtrados a CSV
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Referencias a elementos del DOM
     const loginModalOverlay = document.getElementById('login-modal-overlay');
     const loginForm = document.getElementById('login-form');
@@ -19,31 +19,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalRecordsSpan = document.getElementById('total-records');
     const averageTipSpan = document.getElementById('average-tip');
     const exportCsvBtn = document.getElementById('export-csv-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    let currentAuthHeader = null;
+    // 1. Verificar si hay una sesión activa al cargar la página
+    try {
+        const response = await fetch('/api/session');
+        const data = await response.json();
+        if (data.loggedIn) {
+            showDashboard();
+            await loadTips();
+        } else {
+            showLoginModal();
+        }
+    } catch (error) {
+        showLoginModal();
+    }
 
-    // 1. Mostrar modal de inicio de sesión al cargar
-    loginModalOverlay.classList.remove('hidden');
+    // Funciones auxiliares para mostrar/ocultar elementos
+    function showDashboard() {
+        loginModalOverlay.classList.add('hidden');
+        mainContent.style.visibility = 'visible';
+        logoutBtn.classList.remove('hidden');
+    }
+
+    function showLoginModal() {
+        loginModalOverlay.classList.remove('hidden');
+        mainContent.style.visibility = 'hidden';
+        logoutBtn.classList.add('hidden');
+    }
 
     // 2. Manejar el envío del formulario de login
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = usernameInput.value;
         const password = passwordInput.value;
-        const credentials = btoa(`${username}:${password}`);
-        const authHeader = `Basic ${credentials}`;
         
-        loader.classList.remove('hidden'); // Mostrar spinner
+        loader.classList.remove('hidden');
 
         try {
-            const response = await fetch('/api/tips', {
-                headers: { 'Authorization': authHeader }
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
             });
 
             if (response.ok) {
-                currentAuthHeader = authHeader;
-                loginModalOverlay.classList.add('hidden');
-                mainContent.style.visibility = 'visible';
+                showDashboard();
                 await loadTips();
             } else {
                 const data = await response.json();
@@ -54,7 +75,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loginErrorMessage.textContent = 'No se pudo conectar con el servidor.';
             loginErrorMessage.classList.remove('hidden');
         } finally {
-            loader.classList.add('hidden'); // Ocultar spinner
+            loader.classList.add('hidden');
+        }
+    });
+
+    // 3. Manejar el botón de cerrar sesión
+    logoutBtn.addEventListener('click', async () => {
+        loader.classList.remove('hidden');
+        try {
+            await fetch('/api/logout', { method: 'POST' });
+            showLoginModal();
+        } catch (error) {
+            alert('Error al cerrar la sesión.');
+        } finally {
+            loader.classList.add('hidden');
         }
     });
     
@@ -62,12 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     usernameInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
     passwordInput.addEventListener('input', () => loginErrorMessage.classList.add('hidden'));
 
-    // 3. Función para cargar, renderizar y calcular datos de propinas
-    /**
-     * Carga registros desde la API, aplicando filtros opcionales.
-     * También actualiza la tabla y los totales.
-     * @param {{ waiterName?: string, startDate?: string, endDate?: string }} filters
-     */
+    // 4. Función para cargar, renderizar y calcular datos (sin cabecera Auth)
     async function loadTips(filters = {}) {
         loader.classList.remove('hidden');
         let url = '/api/tips';
@@ -80,13 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (queryString) url += `?${queryString}`;
 
         try {
-            const response = await fetch(url, {
-                headers: { 'Authorization': currentAuthHeader }
-            });
+            const response = await fetch(url); // Ya no se necesita cabecera de Auth
             if (!response.ok) {
                 if(response.status === 401) { // Sesión expirada/inválida
-                    loginModalOverlay.classList.remove('hidden');
-                    mainContent.style.visibility = 'hidden';
+                    showLoginModal();
                 }
                 throw new Error('No se pudieron cargar los datos.');
             }
@@ -101,11 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Función para renderizar los datos en la tabla
-    /**
-     * Dibuja filas de la tabla con la lista de propinas.
-     * @param {Array<{id:number, table_number:string, waiter_name:string, tip_percentage:number, created_at:string}>} tips
-     */
+    // Funciones renderTable y updateTotals (sin cambios)
     function renderTable(tips) {
         tipsTbody.innerHTML = '';
         if (tips.length === 0) {
@@ -125,11 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Función para actualizar los totales
-    /**
-     * Calcula y muestra métricas básicas de la lista.
-     * @param {Array<{tip_percentage:number}>} tips
-     */
     function updateTotals(tips) {
         totalRecordsSpan.textContent = tips.length;
         if (tips.length > 0) {
@@ -141,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 4. Manejar filtros
+    // 5. Manejar filtros (sin cambios)
     filterForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const waiterName = document.getElementById('waiter-filter').value;
@@ -155,9 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loadTips();
     });
     
-    // 5. Manejar la exportación a CSV (VERSIÓN CORREGIDA)
+    // 6. Manejar la exportación a CSV (sin cabecera Auth)
     exportCsvBtn.addEventListener('click', async () => {
-        loader.classList.remove('hidden'); // Muestra el spinner mientras se prepara el archivo
+        loader.classList.remove('hidden');
 
         const waiterName = document.getElementById('waiter-filter').value;
         const startDate = document.getElementById('start-date-filter').value;
@@ -173,34 +190,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (queryString) downloadUrl += `?${queryString}`;
         
         try {
-            // Usamos fetch para poder enviar la cabecera de autenticación
-            const response = await fetch(downloadUrl, {
-                headers: { 'Authorization': currentAuthHeader }
-            });
+            const response = await fetch(downloadUrl); // Ya no se necesita cabecera de Auth
 
             if (!response.ok) {
-                // Si hay un error (ej. no hay datos), lo mostramos al usuario
                 const errorData = await response.json();
                 alert(`Error al exportar: ${errorData.error || response.statusText}`);
                 return;
             }
 
-            // Convertimos la respuesta en un objeto Blob (un tipo de archivo)
             const blob = await response.blob();
-            // Creamos una URL temporal para este objeto
             const url = window.URL.createObjectURL(blob);
             
-            // Creamos un enlace <a> invisible en la página
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'reporte_propinas.csv'; // Nombre del archivo a descargar
+            a.download = 'reporte_propinas.csv';
             document.body.appendChild(a);
             
-            // Simulamos un clic en el enlace para iniciar la descarga
             a.click();
             
-            // Limpiamos la URL y el enlace creados
             window.URL.revokeObjectURL(url);
             a.remove();
 
@@ -208,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error en la descarga del CSV:', error);
             alert('Ocurrió un error al intentar descargar el archivo.');
         } finally {
-            loader.classList.add('hidden'); // Ocultamos el spinner
+            loader.classList.add('hidden');
         }
     });
 });

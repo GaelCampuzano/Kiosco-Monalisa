@@ -1,16 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Dashboard de Administración - Kiosco de Propinas
-  ------------------------------------------------
-  Propósito:
-    - Autenticación por Basic Auth (vía modal) para consultar datos
-    - Filtros por mesero y rango de fechas
-    - Cálculo de métricas (conteo y promedio)
-    - Exportación a CSV respetando filtros
-  Dependencias:
-    - admin.css: estilos de tablero, modal y spinner
-    - admin.js: lógica de autenticación, carga de datos y exportación
--->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -25,8 +13,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>Dashboard de Propinas</h1>
-            <p>Consulta y exporta los registros del kiosco.</p>
+            <div class="header-content">
+                <h1>Dashboard de Propinas</h1>
+                <p>Consulta y exporta los registros del kiosco.</p>
+            </div>
+            <button id="logout-btn" class="btn btn-logout hidden">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Cerrar Sesión
+            </button>
         </header>
         
         <main id="main-content" style="visibility: hidden;">
