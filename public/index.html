@@ -1,36 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF--8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiosco de Propinas - Sunset Monalisa</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
+
+    <div class="backdrop-container"></div>
+
+    <div class="language-selector">
+        <button data-lang="es">Español</button>
+        <button data-lang="en">English</button>
+    </div>
 
     <div id="app-container">
         <section id="waiter-screen" class="screen active">
             <div class="card">
                 <img src="/assets/Sunset-Monalisa-logo@2x_color.svg" alt="Logo Sunset Monalisa" class="logo">
-                <h1>Bienvenido</h1>
-                <p>Por favor, ingresa tus datos para continuar.</p>
+                <h1 data-i18n="welcome_title"></h1>
+                <p data-i18n="welcome_subtitle"></p>
                 <form id="waiter-form" novalidate>
                     <div class="form-group">
-                        <label for="waiter_name">Tu Nombre</label>
+                        <label for="waiter_name" data-i18n="waiter_name_label"></label>
                         <select name="waiter_name" id="waiter_name" required>
-                            <option value="" disabled selected>Cargando meseros...</option>
+                            <option value="" disabled selected data-i18n="select_waiter"></option>
                         </select>
                         <span class="error-message" id="waiter-name-error"></span>
                     </div>
                     <div class="form-group">
-                        <label for="table_number">Número de Mesa</label>
+                        <label for="table_number" data-i18n="table_number_label"></label>
                         <input type="text" id="table_number" name="table_number" inputmode="numeric" pattern="[0-9]*" maxlength="3" required>
                         <span class="error-message" id="table-number-error"></span>
                     </div>
-                    <button type="submit" class="btn btn-primary">Entregar al Cliente</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="submit_button"></button>
                 </form>
             </div>
         </section>
@@ -38,8 +46,8 @@
         <section id="customer-screen" class="screen">
             <div class="card">
                 <img src="/assets/Sunset-Monalisa-logo@2x_color.svg" alt="Logo Sunset Monalisa" class="logo">
-                <h1>Gracias por su visita</h1>
-                <p>Su mesero, <strong id="waiter-name-placeholder"></strong>, agradece su preferencia. ¿Qué Propina desea dejar?</p>
+                <h1 data-i18n="customer_greeting"></h1>
+                <p id="customer-instruction" data-i18n="customer_instruction"></p>
                 <div class="tip-options">
                     <button class="btn btn-tip" data-percentage="20">20%</button>
                     <button class="btn btn-tip" data-percentage="23">23%</button>
@@ -56,15 +64,30 @@
                         <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                     </svg>
                 </div>
-                <h1>¡Propina Registrada!</h1>
-                <p>Muchas gracias por su generosidad.<br>¡Esperamos verlo de nuevo pronto!</p>
+                <h1 data-i18n="thank_you_title"></h1>
+                <p data-i18n="thank_you_subtitle"></p>
             </div>
         </section>
     </div>
 
-    <script src="indexedDB.js"></script>
-    <script src="apiClient.js"></script>
-    <script src="app.js"></script>
+    <div id="offline-indicator" class="notification-toast hidden">
+        <i class="fa-solid fa-wifi"></i>
+        <span data-i18n="offline_indicator"></span>
+    </div>
+
+    <div id="update-notification" class="notification-toast hidden">
+        <i class="fa-solid fa-cloud-arrow-down"></i>
+        <span>
+            Nueva versión disponible.
+            <button id="update-btn">Actualizar</button>
+        </span>
+    </div>
+
+    <script src="indexedDB.js" defer></script>
+    <script src="apiClient.js" defer></script>
+    
+    <script src="app.js" defer></script> 
+    <script src="i18n.js" defer></script> 
 
     <script>
         if ('serviceWorker' in navigator && 'SyncManager' in window) {

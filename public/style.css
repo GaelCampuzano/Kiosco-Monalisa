@@ -20,11 +20,6 @@
 /* ====     Estilos Generales     ==== */
 /* =================================== */
 html {
-    /* Mueve la imagen de fondo al nivel más bajo */
-    background-image: url(/assets/bkg.jpg);
-    background-size: cover;
-    background-position: center;
-    width: 100%;
     height: 100%;
 }
 
@@ -32,29 +27,42 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
     font-family: var(--font-family);
     color: var(--color-text);
-    
-    /* Centra el contenido */
     display: flex;
     justify-content: center;
     align-items: center;
+    background-image: url(/assets/bkg.jpg);
+    background-size: cover;
+    background-position: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-    /* Aplica el efecto de cristal al fondo general */
+/* CAMBIO: Contenedor para el efecto de desenfoque */
+.backdrop-container {
+    width: 100%;
+    height: 100%;
+    position: fixed; /* Se usa fixed para asegurar que cubra toda la ventana */
+    top: 0;
+    left: 0;
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    z-index: 0;
 }
 
 #app-container {
     width: 100%;
     max-width: 480px;
-    padding: 20px;
+    padding: 20px; /* Movimos el padding aquí */
     box-sizing: border-box;
+    position: relative; /* Asegura que el contenido esté sobre el fondo */
+    z-index: 1;
 }
 
-/* Estructura de Pantallas */
 .screen {
     display: none;
 }
@@ -64,21 +72,14 @@ body {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* =================================== */
 /* ====   Tarjeta Principal       ==== */
 /* =================================== */
 .card {
-    /* Efecto de cristal esmerilado para TODAS las tarjetas */
     background-color: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -130,31 +131,30 @@ p {
 .form-group select {
     width: 100%;
     padding: 15px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-family: var(--font-family);
     border: 1px solid #ddd;
     border-radius: 8px;
     box-sizing: border-box;
     transition: all 0.3s;
     background-color: #fcfcfc;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--color-dark-gold);
-    box-shadow: 0 0 0 4px rgba(147, 119, 55, 0.1);
+.form-group select option {
+    font-size: 16px;
 }
 
 .error-message {
     color: var(--color-danger);
     font-size: 0.9rem;
     font-weight: 500;
-    display: none; /* Oculto por defecto */
+    display: none;
     margin-top: 6px;
     min-height: 1.2em;
 }
-
 
 /* =================================== */
 /* ====         Botones           ==== */
@@ -170,6 +170,8 @@ p {
     width: 100%;
     letter-spacing: 0.5px;
     margin-top: 10px;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .btn:hover {
@@ -215,40 +217,102 @@ p {
 /* =================================== */
 /* ====    Pantalla de Gracias    ==== */
 /* =================================== */
-.success-animation {
-    margin: 0 auto 20px auto;
-}
+.success-animation { margin: 0 auto 20px auto; }
+.checkmark { width: 100px; height: 100px; border-radius: 50%; display: block; stroke-width: 3; stroke: var(--color-dark-gold); stroke-miterlimit: 10; margin: 0 auto; }
+.checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: var(--color-light-gold); fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+@keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-.checkmark {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    display: block;
-    stroke-width: 3;
-    stroke: var(--color-dark-gold);
-    stroke-miterlimit: 10;
+/* =================================== */
+/* ====   Selector de Idioma      ==== */
+/* =================================== */
+.language-selector { 
+    position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    z-index: 2100;
+}
+.language-selector button { background-color: rgba(255, 255, 255, 0.8); border: 1px solid var(--color-light-gold); color: var(--color-dark-blue); padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 5px; font-family: var(--font-family); font-weight: 500; transition: all 0.2s ease; }
+.language-selector button:hover { transform: translateY(-2px); }
+.language-selector button.active { background-color: var(--color-dark-gold); color: white; border-color: var(--color-dark-gold); }
+
+
+/* ========================================================== */
+/* ====   Sistema de Notificaciones (Diseño Mejorado)     ==== */
+/* ========================================================== */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
     margin: 0 auto;
+    max-width: 440px;
+    color: var(--color-white);
+    padding: 14px 22px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+    background-color: var(--color-dark-blue);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.checkmark__circle {
-    stroke-dasharray: 166;
-    stroke-dashoffset: 166;
-    stroke-width: 3;
-    stroke-miterlimit: 10;
-    stroke: var(--color-light-gold);
-    fill: none;
-    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+.notification-toast:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
 }
 
-.checkmark__check {
-    transform-origin: 50% 50%;
-    stroke-dasharray: 48;
-    stroke-dashoffset: 48;
-    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+.notification-toast i {
+    font-size: 1.2rem;
+    color: var(--color-light-gold);
 }
 
-@keyframes stroke {
-    100% {
-        stroke-dashoffset: 0;
+.notification-toast.success { background-color: var(--color-dark-gold); border-color: var(--color-light-gold); }
+.notification-toast.success i { color: var(--color-white); }
+.notification-toast.danger { background-color: #c0392b; border-color: rgba(255, 255, 255, 0.2); }
+.notification-toast.danger i { color: var(--color-white); }
+#update-notification { background-color: var(--color-dark-blue); }
+#update-notification button { background: var(--color-light-gold); color: var(--color-dark-blue); border: none; padding: 6px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
+#update-notification button:hover { background-color: #fff; }
+
+/* ========================================================== */
+/* ====     Media Queries (Responsividad)                 ==== */
+/* ========================================================== */
+
+/* MODO RETRATO (VERTICAL) EN MÓVILES */
+@media (max-width: 480px) {
+    #app-container {
+        padding: 20px;
     }
+
+    .card { padding: 25px; }
+    h1 { font-size: 1.8rem; }
+    p { font-size: 1rem; margin-bottom: 25px; }
+    .btn-tip { font-size: 1.5rem; padding: 15px; }
+    .language-selector { top: 15px; right: 15px; }
+    .language-selector button { padding: 6px 10px; font-size: 0.9rem; }
+}
+
+/* MODO HORIZONTAL EN DISPOSITIVOS PEQUEÑOS */
+@media (orientation: landscape) and (max-height: 500px) {
+    #app-container {
+        padding: 20px;
+    }
+    
+    .card { padding: 20px; }
+    .logo { max-width: 120px; margin-bottom: 15px; }
+    h1 { font-size: 1.5rem; margin-bottom: 5px; }
+    p { margin-bottom: 15px; font-size: 0.9rem; }
+    .form-group { margin-bottom: 15px; }
+    .form-group input, .form-group select { padding: 12px; font-size: 1rem; }
+    .btn { padding: 14px; font-size: 1rem; }
 }

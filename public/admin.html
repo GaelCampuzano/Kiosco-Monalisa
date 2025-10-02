@@ -18,6 +18,10 @@
             <div class="header-content">
                 <img src="/assets/Sunset-Monalisa-logo@2x_color.svg" alt="Logo" class="header-logo">
                 <h1>Dashboard de Propinas</h1>
+                <div id="admin-offline-indicator" class="offline-indicator hidden">
+                    <i class="fa-solid fa-wifi"></i>
+                    <span>Modo sin conexión</span>
+                </div>
             </div>
             <button id="logout-btn" class="btn btn-logout">
                 <i class="fa-solid fa-right-from-bracket"></i>
@@ -82,7 +86,6 @@
                 </div>
             </div>
 
-
             <div class="card data-table">
                  <h2>Registros de Propinas</h2>
                 <div class="table-container">
@@ -128,9 +131,14 @@
                 <p id="login-error-message" class="error-message hidden"></p>
                 <button type="submit" class="btn btn-primary">Ingresar</button>
             </form>
-        </div>
+            <p id="login-offline-warning" class="offline-warning-message hidden">
+                <i class="fa-solid fa-wifi"></i>
+                Modo sin conexión. Se requiere acceso a internet para ingresar.
+            </p>
+            </div>
     </div>
 
-    <script src="apiClient.js"></script> <script src="admin.js"></script>
+    <script src="apiClient.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>

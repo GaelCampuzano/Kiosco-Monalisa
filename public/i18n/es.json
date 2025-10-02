@@ -1,0 +1,16 @@
+{
+  "offline_indicator": "Modo sin conexión. Las propinas se guardarán para enviarse después.",
+  "welcome_title": "Bienvenido",
+  "welcome_subtitle": "Por favor, ingresa tus datos para continuar.",
+  "waiter_name_label": "Tu Nombre",
+  "table_number_label": "Número de Mesa",
+  "submit_button": "Entregar al Cliente",
+  "customer_greeting": "Gracias por su visita",
+  "customer_instruction": "Su mesero, <strong>{waiterName}</strong>, agradece su preferencia. ¿Qué Propina desea dejar?",
+  "thank_you_title": "¡Propina Registrada!",
+  "thank_you_subtitle": "Muchas gracias por su generosidad.<br>¡Esperamos verlo de nuevo pronto!",
+  "loading_waiters": "Cargando meseros...",
+  "select_waiter": "-- Selecciona tu nombre --",
+  "error_select_name": "Por favor, selecciona tu nombre.",
+  "error_enter_table": "Por favor, ingresa el número de mesa."
+}

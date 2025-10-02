@@ -1,5 +1,5 @@
 // =============================================================
-// Kiosco Sunset Monalisa - Rutas de la API v2.2 (Final)
+// API Routes v2.3 (Idempotente)
 // =============================================================
 const express = require('express');
 const { body, validationResult } = require('express-validator');
@@ -58,7 +58,8 @@ router.post(
   [
     body('table_number').isString().notEmpty().isLength({ min: 1, max: 10 }).withMessage('El número de mesa es requerido.'),
     body('waiter_name').isString().notEmpty().withMessage('El nombre del mesero es requerido.'),
-    body('tip_percentage').isInt({ min: 20, max: 25 }).isIn([20, 23, 25]).withMessage('Porcentaje de propina no válido.')
+    body('tip_percentage').isInt({ min: 20, max: 25 }).isIn([20, 23, 25]).withMessage('Porcentaje de propina no válido.'),
+    body('transaction_id').isString().notEmpty().withMessage('ID de transacción es requerido.')
   ],
   (req, res, next) => {
     const errors = validationResult(req);
@@ -74,6 +75,10 @@ router.post(
       });
       res.status(201).json({ id: result.id, message: 'Propina registrada con éxito' });
     } catch (error) {
+      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        console.log(`Transacción duplicada detectada y rechazada: ${req.body.transaction_id}`);
+        return res.status(200).json({ message: 'Propina duplicada, ya registrada anteriormente.' });
+      }
       next(error); 
     }
   }

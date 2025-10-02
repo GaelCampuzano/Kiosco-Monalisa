@@ -1,0 +1,16 @@
+{
+  "offline_indicator": "Offline mode. Tips will be saved and sent later.",
+  "welcome_title": "Welcome",
+  "welcome_subtitle": "Please, enter your details to continue.",
+  "waiter_name_label": "Your Name",
+  "table_number_label": "Table Number",
+  "submit_button": "Hand to Customer",
+  "customer_greeting": "Thanks for your visit",
+  "customer_instruction": "Your waiter, <strong>{waiterName}</strong>, appreciates your preference. What Tip would you like to leave?",
+  "thank_you_title": "Tip Registered!",
+  "thank_you_subtitle": "Thank you very much for your generosity.<br>We hope to see you again soon!",
+  "loading_waiters": "Loading waiters...",
+  "select_waiter": "-- Select your name --",
+  "error_select_name": "Please, select your name.",
+  "error_enter_table": "Please, enter the table number."
+}
