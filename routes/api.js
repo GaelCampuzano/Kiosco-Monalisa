@@ -1,10 +1,31 @@
 // =============================================================
-// API Routes v2.3 (Idempotente)
+// API Routes v2.4 (con Health Check)
 // =============================================================
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const db = require('../database.js');
+
+// --- NUEVO: Endpoint de Health Check ---
+router.get('/health', (req, res) => {
+    try {
+        const dbStatus = db.checkDbConnection();
+        const healthStatus = {
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            database: dbStatus,
+        };
+        res.status(200).json(healthStatus);
+    } catch (error) {
+        console.error("Error en el Health Check:", error);
+        res.status(503).json({
+            status: 'error',
+            timestamp: new Date().toISOString(),
+            details: 'El servidor está activo pero hay un problema con un servicio crítico.',
+            database: { status: 'error', message: error.message }
+        });
+    }
+});
 
 const auth = (req, res, next) => {
   if (req.session && req.session.user) {

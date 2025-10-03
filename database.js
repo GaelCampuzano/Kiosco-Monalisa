@@ -1,5 +1,5 @@
 // =============================================================
-// Capa de acceso a datos (SQLite) v2.4 (Migración Robusta)
+// Capa de acceso a datos (SQLite) v2.5 (con Health Check)
 // =============================================================
 const path = require('path');
 const Database = require('better-sqlite3');
@@ -13,7 +13,7 @@ function setupDatabase() {
       table_number TEXT NOT NULL,
       waiter_name TEXT NOT NULL,
       tip_percentage INTEGER NOT NULL,
-      transaction_id TEXT, -- Se añade sin UNIQUE aquí
+      transaction_id TEXT,
       user_agent TEXT,
       device_id TEXT,
       created_at TEXT NOT NULL
@@ -21,12 +21,9 @@ function setupDatabase() {
   `;
   db.exec(createTipsTableStmt);
 
-  // --- Lógica de Migración Robusta ---
-  // 1. Comprueba si la columna transaction_id existe
   const columns = db.prepare("PRAGMA table_info(tips)").all();
   const hasTransactionIdCol = columns.some(col => col.name === 'transaction_id');
 
-  // 2. Si no existe, la añade (sin la restricción UNIQUE)
   if (!hasTransactionIdCol) {
     try {
       db.exec('ALTER TABLE tips ADD COLUMN transaction_id TEXT');
@@ -36,18 +33,13 @@ function setupDatabase() {
     }
   }
 
-  // 3. Crea un ÍNDICE ÚNICO sobre la columna. Es más seguro y flexible.
-  //    Si ya existe, no hace nada.
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction_id ON tips (transaction_id);');
-  
-  // --- Otros índices ---
   db.exec('CREATE INDEX IF NOT EXISTS idx_created_at ON tips (created_at);');
   db.exec('CREATE INDEX IF NOT EXISTS idx_waiter_name ON tips (waiter_name);');
   
   console.log('Base de datos conectada y tabla "tips" asegurada.');
 }
 
-// Inicializar la base de datos
 setupDatabase();
 
 function getTips({ startDate, endDate, waiterName } = {}) {
@@ -95,9 +87,22 @@ function getWaiters() {
   ];
 }
 
+// --- NUEVA FUNCIÓN ---
+function checkDbConnection() {
+  try {
+    // Realiza una consulta simple que no consume muchos recursos.
+    db.prepare('SELECT 1').get();
+    return { status: 'ok', message: 'Conexión exitosa.' };
+  } catch (error) {
+    console.error("Fallo en la conexión a la DB:", error.message);
+    throw new Error('No se pudo conectar a la base de datos.');
+  }
+}
+
 module.exports = {
   db,
   getTips,
   addTip,
-  getWaiters
+  getWaiters,
+  checkDbConnection // <-- Se exporta la nueva función
 };
