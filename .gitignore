@@ -1,8 +1,3 @@
-# Ignorar el archivo de variables de entorno con credenciales
 .env.example
-
-# Ignorar la carpeta de dependencias de Node.js
 node_modules/
-
-# Ignorar la base de datos de SQLite
 /data/tips.db

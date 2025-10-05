@@ -1,12 +1,9 @@
-// =============================================================
-// API Routes v2.4 (con Health Check)
-// =============================================================
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const db = require('../database.js');
 
-// --- NUEVO: Endpoint de Health Check ---
+// Ruta para verificar el estado del servidor.
 router.get('/health', (req, res) => {
     try {
         const dbStatus = db.checkDbConnection();
@@ -27,6 +24,7 @@ router.get('/health', (req, res) => {
     }
 });
 
+// Middleware para verificar si el usuario está autenticado.
 const auth = (req, res, next) => {
   if (req.session && req.session.user) {
     return next();
@@ -34,6 +32,7 @@ const auth = (req, res, next) => {
   res.status(401).json({ error: 'No autorizado. Por favor, inicia sesión.' });
 };
 
+// Ruta para iniciar sesión.
 router.post(
   '/login',
   [
@@ -56,6 +55,7 @@ router.post(
   }
 );
 
+// Ruta para cerrar sesión.
 router.post('/logout', (req, res, next) => {
   req.session.destroy(err => {
     if (err) {
@@ -66,6 +66,7 @@ router.post('/logout', (req, res, next) => {
   });
 });
 
+// Ruta para verificar el estado de la sesión.
 router.get('/session', (req, res) => {
   if (req.session && req.session.user) {
     res.status(200).json({ loggedIn: true });
@@ -74,6 +75,7 @@ router.get('/session', (req, res) => {
   }
 });
 
+// Ruta para registrar una nueva propina.
 router.post(
   '/tips', 
   [
@@ -105,6 +107,7 @@ router.post(
   }
 );
 
+// Ruta para obtener las propinas (requiere autenticación).
 router.get('/tips', auth, (req, res, next) => {
   try {
     const tips = db.getTips(req.query);
@@ -114,6 +117,7 @@ router.get('/tips', auth, (req, res, next) => {
   }
 });
 
+// Ruta para exportar las propinas a CSV (requiere autenticación).
 router.get('/tips/csv', auth, (req, res, next) => {
     try {
       const tips = db.getTips(req.query);
@@ -145,6 +149,7 @@ router.get('/tips/csv', auth, (req, res, next) => {
     }
 });
 
+// Ruta para obtener la lista de meseros.
 router.get('/waiters', (req, res, next) => {
   try {
     const waiters = db.getWaiters();

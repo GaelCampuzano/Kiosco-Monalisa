@@ -1,7 +1,4 @@
-/**
- * Kiosco Público de Propinas v3.3 (Mejoras Offline y UX de Notificaciones)
- */
-
+// Objeto principal de la aplicación.
 const app = {
     DOMElements: {},
     appState: {
@@ -21,6 +18,7 @@ const app = {
         this.showScreen('waiter-screen');
     },
 
+    // Guardamos las referencias a los elementos del HTML.
     cacheDOMElements() {
         this.DOMElements = {
             screens: document.querySelectorAll('.screen'),
@@ -40,16 +38,34 @@ const app = {
         };
     },
 
+    // Limpiamos los mensajes de error de validación.
+    clearValidationErrors() {
+        if (this.DOMElements.waiterNameError) {
+            this.DOMElements.waiterNameError.textContent = '';
+            this.DOMElements.waiterNameError.style.display = 'none';
+        }
+        if (this.DOMElements.tableNumberError) {
+            this.DOMElements.tableNumberError.textContent = '';
+            this.DOMElements.tableNumberError.style.display = 'none';
+        }
+    },
+    
+    // Mostramos una pantalla específica.
     showScreen(screenId) {
         this.DOMElements.screens.forEach(screen => screen.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
     },
 
+    // Agregamos los event listeners a los elementos.
     addEventListeners() {
         this.DOMElements.waiterForm.addEventListener('submit', this.handleFormSubmit.bind(this));
         this.DOMElements.tipOptionsContainer.addEventListener('click', this.handleTipSelection.bind(this));
         this.DOMElements.waiterNameSelect.addEventListener('change', () => this.validateField(this.DOMElements.waiterNameSelect.value !== '', this.DOMElements.waiterNameError, i18n.t('error_select_name')));
-        this.DOMElements.tableNumberInput.addEventListener('input', () => this.validateField(this.DOMElements.tableNumberInput.value.trim() !== '', this.DOMElements.tableNumberError, i18n.t('error_enter_table')));
+        this.DOMElements.tableNumberInput.addEventListener('input', (event) => {
+            // Reemplaza cualquier caracter que no sea un número
+            event.target.value = event.target.value.replace(/[^0-9]/g, '');
+            this.validateField(this.DOMElements.tableNumberInput.value.trim() !== '', this.DOMElements.tableNumberError, i18n.t('error_enter_table'));
+        });
         
         document.querySelectorAll('.language-selector button').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -59,14 +75,15 @@ const app = {
         });
     },
 
+    // Manejamos el estado de la conexión a internet.
     handleOfflineStatus() {
         window.addEventListener('online', () => this.verifyOnlineStatus());
         window.addEventListener('offline', () => this.DOMElements.offlineIndicator.classList.remove('hidden'));
         this.verifyOnlineStatus();
     },
 
+    // Verificamos si realmente tenemos conexión.
     verifyOnlineStatus() {
-        // Usamos una petición HEAD a un recurso no cacheado para una verificación real
         fetch('/api/session', { method: 'HEAD', cache: 'no-store' })
             .then(response => {
                 if (response.ok) {
@@ -80,6 +97,7 @@ const app = {
             });
     },
 
+    // Escuchamos los mensajes del Service Worker.
     listenForSWMessages() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.onmessage = (event) => {
@@ -90,8 +108,8 @@ const app = {
         }
     },
 
+    // Mostramos una notificación.
     showToast(message, type = 'info', duration = 5000) {
-        // Elimina cualquier toast existente para evitar duplicados
         document.querySelector('.dynamic-toast')?.remove();
     
         const toast = document.createElement('div');
@@ -112,20 +130,19 @@ const app = {
         toast.appendChild(text);
         document.body.appendChild(toast);
     
-        // Animar la entrada
         setTimeout(() => toast.classList.remove('hidden'), 50);
     
-        // Ocultar y eliminar después de la duración especificada
         setTimeout(() => {
             toast.classList.add('hidden');
             toast.addEventListener('transitionend', () => toast.remove());
         }, duration);
     },
 
+    // Cargamos la lista de meseros desde la API.
     async loadWaiters() {
         try {
             const waiters = await apiClient.getWaiters();
-            this.DOMElements.waiterNameSelect.innerHTML = ''; // Limpiar opciones
+            this.DOMElements.waiterNameSelect.innerHTML = '';
             const defaultOption = document.createElement('option');
             defaultOption.value = "";
             defaultOption.disabled = true;
@@ -155,6 +172,7 @@ const app = {
         }
     },
 
+    // Manejamos el envío del formulario del mesero.
     handleFormSubmit(event) {
         event.preventDefault();
         const waiterName = this.DOMElements.waiterNameSelect.value;
@@ -169,12 +187,14 @@ const app = {
         this.showScreen('customer-screen');
     },
         
+    // Validamos un campo del formulario.
     validateField(condition, errorElement, message) {
         errorElement.textContent = condition ? '' : message;
         errorElement.style.display = condition ? 'none' : 'block';
         return !!condition;
     },
 
+    // Deshabilitamos los botones de propina.
     disableTipButtons(disabled) {
         this.DOMElements.tipOptionsContainer.querySelectorAll('.btn-tip').forEach(btn => {
             btn.disabled = disabled;
@@ -183,6 +203,7 @@ const app = {
         });
     },
     
+    // Manejamos la selección de propina.
     handleTipSelection(event) {
         if (event.target.classList.contains('btn-tip') && !event.target.disabled) {
             this.disableTipButtons(true);
@@ -192,8 +213,10 @@ const app = {
         }
     },
 
+    // Enviamos los datos de la propina al servidor.
     async sendTipData() {
-        const isOnline = !this.DOMElements.offlineIndicator.classList.contains('hidden');
+        // CORRECCIÓN: Se quitó el '!' para que la lógica de conexión sea correcta.
+        const isOnline = this.DOMElements.offlineIndicator.classList.contains('hidden');
         try {
             if (isOnline) {
                 await apiClient.sendTip(this.appState);
@@ -226,6 +249,7 @@ const app = {
     }
 };
 
+// Manejamos la actualización del Service Worker.
 function manageServiceWorker() {
     let newWorker;
     if ('serviceWorker' in navigator) {
@@ -258,6 +282,7 @@ function manageServiceWorker() {
     }
 }
 
+// Punto de entrada de la aplicación.
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await i18n.init('es');

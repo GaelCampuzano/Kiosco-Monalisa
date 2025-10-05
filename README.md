@@ -79,7 +79,6 @@ La aplicación estará disponible en `http://localhost:3000` (o el puerto que ha
 
 ## Estructura del Proyecto
 
-```
 /
 ├── public/           # Archivos estáticos (kiosco y admin)
 ├── routes/           # Definición de rutas de la API
@@ -89,7 +88,7 @@ La aplicación estará disponible en `http://localhost:3000` (o el puerto que ha
 ├── server.js         # Servidor Express principal
 ├── package.json
 └── README.md
-```
+
 
 ## API Endpoints
 
@@ -127,9 +126,3 @@ La aplicación estará disponible en `http://localhost:3000` (o el puerto que ha
 -   `GET /api/waiters`
     -   **Descripción:** Obtiene la lista de meseros para el kiosco.
     -   **Autenticación:** No requiere.
-
-## Notas de Seguridad y Configuración
-
--   El acceso al dashboard y a las rutas de consulta está protegido por un sistema de sesiones seguro.
--   Las contraseñas y secretos se gestionan a través de variables de entorno (`.env`).
--   Se realiza una validación exhaustiva de los datos en el backend para prevenir entradas maliciosas.

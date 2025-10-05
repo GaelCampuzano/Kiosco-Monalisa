@@ -1,6 +1,4 @@
-/* =================================== */
-/* ====   Paleta de Colores CSS   ==== */
-/* =================================== */
+/* Colores de la aplicación */
 :root {
     --color-dark-blue: #162B46;
     --color-light-gold: #DFC894;
@@ -14,17 +12,15 @@
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* =================================== */
-/* ====     Estilos Generales     ==== */
-/* =================================== */
+/* Estilos generales del cuerpo de la página */
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--color-background);
     color: var(--color-text);
     margin: 0;
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased; /* Mejora renderizado de fuentes en WebKit */
-    -moz-osx-font-smoothing: grayscale;  /* Mejora renderizado de fuentes en Firefox */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .background-container {
@@ -47,20 +43,18 @@ body {
     padding: 25px;
 }
 
-/* =================================== */
-/* ====         Encabezado        ==== */
-/* =================================== */
+/* Encabezado */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea */
+    flex-wrap: wrap;
     gap: 15px;
     padding: 15px 25px;
     margin-bottom: 30px;
     background-color: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px); /* Compatibilidad con Safari */
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     box-shadow: var(--shadow);
@@ -100,9 +94,7 @@ header h1 {
     color: var(--color-light-gold);
 }
 
-/* =================================== */
-/* ====         Botones           ==== */
-/* =================================== */
+/* Botones */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -115,11 +107,11 @@ header h1 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    -webkit-appearance: none; /* Elimina estilos por defecto en Safari/Chrome */
-    -moz-appearance: none;    /* Elimina estilos por defecto en Firefox */
-    appearance: none;          /* Elimina estilos por defecto estándar */
-    user-select: none; /* Evita selección de texto en botones */
-    -webkit-user-select: none; /* Compatibilidad con Safari */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .btn:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -172,13 +164,11 @@ header h1 {
 }
 
 
-/* =================================== */
-/* ====      Tarjetas (Cards)     ==== */
-/* =================================== */
+/* Tarjetas */
 .card {
     background-color: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px); /* Compatibilidad con Safari */
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     box-shadow: var(--shadow);
@@ -199,9 +189,7 @@ header h1 {
     gap: 10px;
 }
 
-/* =================================== */
-/* ====     Sección de Resumen    ==== */
-/* =================================== */
+/* Sección de resumen */
 .summary-section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -211,7 +199,7 @@ header h1 {
 .metric-card {
     background-color: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px); /* Compatibilidad con Safari */
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
@@ -244,10 +232,7 @@ header h1 {
     color: var(--color-dark-blue);
 }
 
-/* =================================== */
-/* ==== Controles (Filtros, etc) ==== */
-/* =================================== */
-
+/* Controles (filtros, etc.) */
 .controls-container {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -298,17 +283,15 @@ header h1 {
     margin-top: -10px;
 }
 
-/* =================================== */
-/* ====      Tabla de Datos       ==== */
-/* =================================== */
+/* Tabla de datos */
 .table-container {
-    overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
+    overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px; /* Asegura que la tabla no se comprima demasiado */
+    min-width: 600px;
 }
 
 th, td {
@@ -316,7 +299,7 @@ th, td {
     padding: 15px;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
-    white-space: nowrap; /* Evita que el contenido de las celdas se rompa en varias líneas */
+    white-space: nowrap;
 }
 
 thead th {
@@ -332,10 +315,7 @@ tbody tr:hover {
     background-color: #f8f9fa;
 }
 
-/* =================================== */
-/* ====     Login y Spinner       ==== */
-/* =================================== */
-
+/* === ESTILOS MEJORADOS PARA EL LOGIN === */
 .login-overlay {
     position: fixed;
     top: 0;
@@ -344,7 +324,7 @@ tbody tr:hover {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Compatibilidad con Safari */
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -360,19 +340,19 @@ tbody tr:hover {
 }
 
 .login-modal {
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px); /* Compatibilidad con Safari */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 40px;
-    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 45px;
+    border-radius: 16px;
     width: 100%;
-    max-width: 380px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-width: 400px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     text-align: center;
     transform: scale(0.95);
     transition: transform 0.3s ease-in-out;
-    margin: 20px; /* Margen para pantallas pequeñas */
+    margin: 20px;
 }
 
 .login-overlay:not(.hidden) .login-modal {
@@ -380,16 +360,83 @@ tbody tr:hover {
 }
 
 .login-logo {
-    max-width: 200px;
-    margin-bottom: 20px;
+    max-width: 180px;
+    margin-bottom: 25px;
 }
 
 .login-modal h2 {
-    margin: 0 0 25px;
+    margin: 0 0 35px;
     color: var(--color-dark-blue);
     font-weight: 700;
+    font-size: 26px;
 }
-/* ... (resto de los estilos de .login-modal) ... */
+
+.login-modal .form-group {
+    margin-bottom: 25px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-grey);
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.login-modal input {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: #fdfdfd;
+    transition: all 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+    color: var(--color-text);
+}
+
+.login-modal input::placeholder {
+    color: #aaa;
+}
+
+.login-modal input:focus {
+    outline: none;
+    border-color: var(--color-dark-gold);
+    box-shadow: 0 0 0 4px rgba(147, 119, 55, 0.1);
+    background-color: var(--color-white);
+}
+
+.input-wrapper:focus-within i {
+    color: var(--color-dark-gold);
+}
+
+.login-modal .btn-primary {
+    width: 100%;
+    padding: 16px 25px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 10px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-top: 15px;
+    background-color: var(--color-dark-blue);
+    color: var(--color-white);
+    border: none;
+}
+
+.login-modal .btn-primary:hover:not(:disabled) {
+    background-color: #2c4a6e;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(22, 43, 70, 0.2);
+}
+
 .form-error-message, .offline-warning-message, .error-message {
     text-align: center;
     padding: 12px;
@@ -405,23 +452,19 @@ tbody tr:hover {
 .error-message { color: var(--color-danger); background-color: #fadbd8; border: 1px solid #f5b7b1; }
 .offline-warning-message { background-color: var(--color-light-gold); color: var(--color-dark-blue); border: 1px solid var(--color-dark-gold); }
 
+/* Spinner y otros */
 .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
 .loader-spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--color-dark-gold); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .hidden { display: none !important; }
 
-/* =================================== */
-/* ====     Media Queries         ==== */
-/* =================================== */
-
-/* Tablets y pantallas medianas */
+/* Estilos para pantallas pequeñas */
 @media (max-width: 992px) {
     .controls-container {
-        grid-template-columns: 1fr; /* Los filtros y la exportación se apilan */
+        grid-template-columns: 1fr;
     }
 }
 
-/* Móviles grandes y tablets en vertical */
 @media (max-width: 768px) {
     .container {
         padding: 15px;
@@ -438,7 +481,7 @@ tbody tr:hover {
     }
 
     .filters .filter-controls {
-        grid-template-columns: 1fr; /* Los inputs de los filtros se apilan */
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
@@ -450,7 +493,6 @@ tbody tr:hover {
     }
 }
 
-/* Móviles pequeños */
 @media (max-width: 480px) {
     header h1 {
         font-size: 20px;

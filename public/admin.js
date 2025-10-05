@@ -1,13 +1,5 @@
-/**
- * Dashboard de Administración - v2.2 (Gestión de Conexión Global)
- * -------------------------------------------------------------
- * Mejoras:
- * - Indicador de conexión persistente en el header del dashboard.
- * - Desactivación de botones de acción (filtrar, exportar) en modo offline.
- * - Verificación de red más robusta para evitar falsos positivos.
- */
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Referencias al DOM ---
+    // Aquí guardamos las referencias a los elementos del HTML.
     const UI = {
         container: document.querySelector('.container'),
         loader: document.getElementById('loader'),
@@ -40,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn: document.getElementById('logout-btn'),
     };
 
-    // --- Funciones de Utilidad ---
+    // Funciones que nos ayudan a no repetir código.
     const utils = {
         toggle: (element, show) => element.classList.toggle('hidden', !show),
         showError: (element, message, duration = 4000) => {
@@ -74,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }),
     };
 
-    // --- Lógica de la Aplicación ---
+    // Objeto principal de la aplicación.
     const app = {
         isOnline: true,
 
@@ -94,9 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
             UI.export.btn.addEventListener('click', this.handleExport.bind(this));
         },
 
+        // Revisamos si tenemos conexión a internet.
         async handleNetworkChange() {
             try {
-                // Verificación real de la red
                 await fetch('/api/session', { method: 'HEAD', cache: 'no-store' });
                 this.isOnline = true;
             } catch {
@@ -105,17 +97,17 @@ document.addEventListener('DOMContentLoaded', () => {
             this.updateUIForNetworkStatus();
         },
 
+        // Actualizamos la interfaz dependiendo de si hay o no internet.
         updateUIForNetworkStatus() {
-            // Panel de Login
             utils.toggle(UI.login.offlineWarning, !this.isOnline);
             UI.login.submitBtn.disabled = !this.isOnline;
             
-            // Dashboard principal
             utils.toggle(UI.adminOfflineIndicator, !this.isOnline);
             UI.filters.applyBtn.disabled = !this.isOnline;
             UI.export.btn.disabled = !this.isOnline;
         },
         
+        // Función para ejecutar tareas asíncronas y mostrar un loader.
         async runAsync(task, showErrorElement = null) {
             utils.toggle(UI.loader, true);
             try {
@@ -128,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (showErrorElement) {
                     utils.showError(showErrorElement, errorMessage);
                 }
-                // Si el error es de red, re-verificamos el estado
                 if (errorMessage.includes('Error de conexión')) {
                     this.handleNetworkChange();
                 }
@@ -142,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             utils.toggle(UI.container, show);
         },
         
+        // Verificamos si el usuario ya ha iniciado sesión.
         async checkUserSession() {
             if (!this.isOnline) {
                 this.showDashboard(false);
@@ -158,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, UI.login.errorMessage);
         },
 
+        // Cargamos las propinas desde la API.
         async loadTips(filters = {}) {
             await this.runAsync(async () => {
                 const tips = await apiClient.getTips(filters);
@@ -166,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, UI.filters.errorMessage);
         },
 
+        // Manejamos el inicio de sesión.
         async handleLogin(e) {
             e.preventDefault();
             if (!this.isOnline) return;
@@ -178,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, UI.login.errorMessage);
         },
 
+        // Manejamos el cierre de sesión.
         async handleLogout() {
             await this.runAsync(async () => {
                 await apiClient.logout();
@@ -188,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, UI.login.errorMessage);
         },
         
+        // Aplicamos los filtros de búsqueda.
         handleFilter(e) {
             e.preventDefault();
             if (!this.isOnline) {
@@ -202,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.loadTips(filters);
         },
 
+        // Limpiamos los filtros de búsqueda.
         handleResetFilters() {
             UI.filters.form.reset();
             if (this.isOnline) {
@@ -209,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        // Exportamos los datos a un archivo CSV.
         async handleExport() {
             if (!this.isOnline) {
                 utils.showError(UI.export.errorMessage, 'Necesitas conexión para exportar los datos.');

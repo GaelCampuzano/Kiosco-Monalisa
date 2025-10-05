@@ -1,11 +1,10 @@
-// =============================================================
-// Capa de acceso a datos (SQLite) v2.5 (con Health Check)
-// =============================================================
 const path = require('path');
 const Database = require('better-sqlite3');
 
+// Creamos o abrimos la base de datos.
 const db = new Database(path.join(__dirname, 'data', 'tips.db'));
 
+// Esta función se encarga de crear la tabla de propinas si no existe.
 function setupDatabase() {
   const createTipsTableStmt = `
     CREATE TABLE IF NOT EXISTS tips (
@@ -21,18 +20,19 @@ function setupDatabase() {
   `;
   db.exec(createTipsTableStmt);
 
+  // Agregamos la columna transaction_id si no existe (para versiones antiguas).
   const columns = db.prepare("PRAGMA table_info(tips)").all();
   const hasTransactionIdCol = columns.some(col => col.name === 'transaction_id');
 
   if (!hasTransactionIdCol) {
     try {
       db.exec('ALTER TABLE tips ADD COLUMN transaction_id TEXT');
-      console.log('Migración: Columna transaction_id añadida exitosamente.');
     } catch (error) {
-      console.error("Error durante la migración al añadir la columna:", error);
+      console.error("Error al añadir la columna transaction_id:", error);
     }
   }
 
+  // Creamos índices para que las búsquedas sean más rápidas.
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction_id ON tips (transaction_id);');
   db.exec('CREATE INDEX IF NOT EXISTS idx_created_at ON tips (created_at);');
   db.exec('CREATE INDEX IF NOT EXISTS idx_waiter_name ON tips (waiter_name);');
@@ -42,6 +42,7 @@ function setupDatabase() {
 
 setupDatabase();
 
+// Obtenemos las propinas de la base de datos, con filtros opcionales.
 function getTips({ startDate, endDate, waiterName } = {}) {
     let query = 'SELECT * FROM tips';
     const params = [];
@@ -68,6 +69,7 @@ function getTips({ startDate, endDate, waiterName } = {}) {
     return stmt.all(params);
 }
 
+// Agregamos una nueva propina a la base de datos.
 function addTip(tipData) {
     const { table_number, waiter_name, tip_percentage, transaction_id, user_agent, device_id, created_at } = tipData;
     const stmt = db.prepare(
@@ -77,6 +79,7 @@ function addTip(tipData) {
     return { id: info.lastInsertRowid };
 }
 
+// Obtenemos la lista de meseros.
 function getWaiters() {
   return [
     { name: 'David' },
@@ -87,10 +90,9 @@ function getWaiters() {
   ];
 }
 
-// --- NUEVA FUNCIÓN ---
+// Verificamos que la conexión a la base de datos esté funcionando.
 function checkDbConnection() {
   try {
-    // Realiza una consulta simple que no consume muchos recursos.
     db.prepare('SELECT 1').get();
     return { status: 'ok', message: 'Conexión exitosa.' };
   } catch (error) {
@@ -104,5 +106,5 @@ module.exports = {
   getTips,
   addTip,
   getWaiters,
-  checkDbConnection // <-- Se exporta la nueva función
+  checkDbConnection
 };

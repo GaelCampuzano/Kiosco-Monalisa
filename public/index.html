@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kiosco de Propinas - Sunset Monalisa</title>
     <link rel="stylesheet" href="style.css">
@@ -35,7 +35,7 @@
                     </div>
                     <div class="form-group">
                         <label for="table_number" data-i18n="table_number_label"></label>
-                        <input type="text" id="table_number" name="table_number" inputmode="numeric" pattern="[0-9]*" maxlength="3" required>
+                        <input type="tel" id="table_number" name="table_number" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" required>
                         <span class="error-message" id="table-number-error"></span>
                     </div>
                     <button type="submit" class="btn btn-primary" data-i18n="submit_button"></button>
@@ -85,9 +85,8 @@
 
     <script src="indexedDB.js" defer></script>
     <script src="apiClient.js" defer></script>
-    
-    <script src="app.js" defer></script> 
-    <script src="i18n.js" defer></script> 
+    <script src="app.js" defer></script>
+    <script src="i18n.js" defer></script>
 
     <script>
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
@@ -99,8 +98,6 @@
                         console.log('Fallo en el registro del Service Worker:', error);
                     });
             });
-        } else {
-            console.log('Service Worker o Background Sync no son soportados por este navegador.');
         }
     </script>
 </body>

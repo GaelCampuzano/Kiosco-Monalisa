@@ -1,6 +1,4 @@
-/* =================================== */
-/* ====   Paleta de Colores CSS   ==== */
-/* =================================== */
+/* Colores de la aplicación */
 :root {
     --color-dark-blue: #162B46;
     --color-light-gold: #DFC894;
@@ -16,9 +14,7 @@
     --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* =================================== */
-/* ====     Estilos Generales     ==== */
-/* =================================== */
+/* Estilos generales del cuerpo de la página */
 html {
     height: 100%;
 }
@@ -41,11 +37,11 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* CAMBIO: Contenedor para el efecto de desenfoque */
+/* Contenedor para el efecto de desenfoque */
 .backdrop-container {
     width: 100%;
     height: 100%;
-    position: fixed; /* Se usa fixed para asegurar que cubra toda la ventana */
+    position: fixed;
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.3);
@@ -54,15 +50,17 @@ body {
     z-index: 0;
 }
 
+/* Contenedor principal de la aplicación */
 #app-container {
     width: 100%;
     max-width: 480px;
-    padding: 20px; /* Movimos el padding aquí */
+    padding: 20px;
     box-sizing: border-box;
-    position: relative; /* Asegura que el contenido esté sobre el fondo */
+    position: relative;
     z-index: 1;
 }
 
+/* Estilos para las diferentes pantallas de la aplicación */
 .screen {
     display: none;
 }
@@ -76,9 +74,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* =================================== */
-/* ====   Tarjeta Principal       ==== */
-/* =================================== */
+/* Tarjeta principal */
 .card {
     background-color: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
@@ -110,9 +106,7 @@ p {
     line-height: 1.6;
 }
 
-/* =================================== */
-/* ====        Formularios        ==== */
-/* =================================== */
+/* Estilos para los formularios */
 .form-group {
     margin-bottom: 25px;
     text-align: left;
@@ -156,9 +150,7 @@ p {
     min-height: 1.2em;
 }
 
-/* =================================== */
-/* ====         Botones           ==== */
-/* =================================== */
+/* Estilos para los botones */
 .btn {
     padding: 18px 25px;
     font-size: 1.1rem;
@@ -214,18 +206,14 @@ p {
     color: var(--color-dark-gold);
 }
 
-/* =================================== */
-/* ====    Pantalla de Gracias    ==== */
-/* =================================== */
+/* Pantalla de agradecimiento */
 .success-animation { margin: 0 auto 20px auto; }
 .checkmark { width: 100px; height: 100px; border-radius: 50%; display: block; stroke-width: 3; stroke: var(--color-dark-gold); stroke-miterlimit: 10; margin: 0 auto; }
 .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: var(--color-light-gold); fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
 .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
 @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-/* =================================== */
-/* ====   Selector de Idioma      ==== */
-/* =================================== */
+/* Selector de idioma */
 .language-selector { 
     position: fixed; 
     top: 20px; 
@@ -237,9 +225,7 @@ p {
 .language-selector button.active { background-color: var(--color-dark-gold); color: white; border-color: var(--color-dark-gold); }
 
 
-/* ========================================================== */
-/* ====   Sistema de Notificaciones (Diseño Mejorado)     ==== */
-/* ========================================================== */
+/* Notificaciones */
 .notification-toast {
     position: fixed;
     top: 20px;
@@ -284,11 +270,7 @@ p {
 #update-notification button { background: var(--color-light-gold); color: var(--color-dark-blue); border: none; padding: 6px 12px; border-radius: 6px; margin-left: 15px; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
 #update-notification button:hover { background-color: #fff; }
 
-/* ========================================================== */
-/* ====     Media Queries (Responsividad)                 ==== */
-/* ========================================================== */
-
-/* MODO RETRATO (VERTICAL) EN MÓVILES */
+/* Estilos para pantallas pequeñas */
 @media (max-width: 480px) {
     #app-container {
         padding: 20px;
@@ -302,7 +284,7 @@ p {
     .language-selector button { padding: 6px 10px; font-size: 0.9rem; }
 }
 
-/* MODO HORIZONTAL EN DISPOSITIVOS PEQUEÑOS */
+/* Estilos para pantallas en modo horizontal */
 @media (orientation: landscape) and (max-height: 500px) {
     #app-container {
         padding: 20px;

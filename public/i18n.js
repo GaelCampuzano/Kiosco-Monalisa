@@ -1,10 +1,8 @@
-/**
- * Gestor de traducciones y PUNTO DE ENTRADA de la aplicación
- */
-
+// Este objeto se encarga de las traducciones.
 const i18n = {
     translations: {},
 
+    // Cargamos el archivo de idioma.
     async loadLanguage(lang) {
         const response = await fetch(`/i18n/${lang}.json`);
         if (!response.ok) {
@@ -13,6 +11,7 @@ const i18n = {
         this.translations = await response.json();
     },
 
+    // Aplicamos las traducciones a los elementos del HTML.
     applyTranslations() {
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
@@ -23,6 +22,7 @@ const i18n = {
         document.documentElement.lang = this.currentLanguage;
     },
 
+    // Obtenemos una traducción específica.
     t(key, replacements = {}) {
         let translation = this.translations[key] || key;
         for (const placeholder in replacements) {
@@ -31,6 +31,7 @@ const i18n = {
         return translation;
     },
 
+    // Inicializamos el sistema de traducciones.
     async init(defaultLang = 'es') {
         let lang = localStorage.getItem('language') || navigator.language.split('-')[0];
         if (!['es', 'en'].includes(lang)) {
@@ -42,6 +43,7 @@ const i18n = {
         this.updateLangSelectorUI();
     },
     
+    // Cambiamos de idioma.
     async changeLanguage(lang) {
         if (lang === this.currentLanguage) return;
         this.currentLanguage = lang;
@@ -49,12 +51,14 @@ const i18n = {
         await this.loadLanguage(lang);
         this.applyTranslations();
         this.updateLangSelectorUI();
-        
-        // --- ESTA ES LA LÍNEA NUEVA Y CRUCIAL ---
-        // Le decimos a la app que reconstruya el menú de meseros.
         app.loadWaiters();
+        // Limpiamos los errores para que no se queden en el idioma anterior.
+        if (typeof app.clearValidationErrors === 'function') {
+            app.clearValidationErrors();
+        }
     },
 
+    // Actualizamos la interfaz de los botones de idioma.
     updateLangSelectorUI() {
         document.querySelectorAll('.language-selector button').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === this.currentLanguage);
@@ -62,15 +66,11 @@ const i18n = {
     }
 };
 
-// --- PUNTO DE ENTRADA PRINCIPAL (VERSIÓN A PRUEBA DE ERRORES) ---
+// Punto de entrada de la aplicación.
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log("DOM Cargado. Inicializando i18n...");
         await i18n.init('es');
-        
-        console.log("i18n listo. Arrancando la aplicación...");
         app.init();
-
     } catch (error) {
         console.error("ERROR FATAL DURANTE LA INICIALIZACIÓN:", error);
     }
