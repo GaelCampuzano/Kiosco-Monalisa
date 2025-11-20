@@ -2,7 +2,8 @@
 // Kiosco Sunset Monalisa - Service Worker v2.4 (Definitivo)
 // =============================================================
 
-const CACHE_NAME = 'kiosco-cache-v11'; 
+const CACHE_NAME = 'kiosco-cache-v12'; 
+
 const urlsToCache = [
   '/', '/index.html', '/admin.html',
   '/style.css', '/admin.css',
