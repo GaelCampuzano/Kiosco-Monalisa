@@ -29,7 +29,6 @@ const apiClient = {
 
   logout: () => fetch('/api/logout', { method: 'POST' }).then(handleResponse),
 
-  // --- FUNCIÓN MODIFICADA PARA PAGINACIÓN ---
   getTips: (filters = {}, page = 1, limit = 10) => {
     const params = new URLSearchParams({
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)),
@@ -40,11 +39,34 @@ const apiClient = {
     return fetch(url).then(handleResponse);
   },
 
-  sendTip: (tipData) => fetch('/api/tips', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tipData),
-  }).then(handleResponse),
+  // ===========================================================================
+  // 🚨 CORRECCIÓN PRINCIPAL: Timeout de 5 segundos
+  // Si el servidor no responde en 5s (Neon despertando), cortamos y guardamos offline.
+  // ===========================================================================
+  sendTip: async (tipData) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos máximo de espera
+
+    try {
+        const response = await fetch('/api/tips', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tipData),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId); // Si respondió a tiempo, limpiamos el reloj
+        return handleResponse(response);
+    } catch (error) {
+        clearTimeout(timeoutId);
+        // Si el error fue por tiempo (AbortError), lanzamos un error específico 
+        // que app.js entenderá como "No hay conexión estable" y guardará en IndexedDB.
+        if (error.name === 'AbortError') {
+            throw new Error('Timeout: El servidor tardó demasiado, guardando offline.');
+        }
+        throw error;
+    }
+  },
+  // ===========================================================================
 
   getWaiters: () => fetch('/api/waiters').then(handleResponse),
 

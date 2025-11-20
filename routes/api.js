@@ -4,22 +4,23 @@ const router = express.Router();
 const db = require('../database.js');
 
 // Ruta para verificar el estado del servidor.
-router.get('/health', (req, res) => {
+router.get('/health', async (req, res) => {
     try {
-        const dbStatus = db.checkDbConnection();
+        const dbStatus = await db.checkDbConnection().catch(e => ({ status: 'error', message: e.message }));
         const healthStatus = {
             status: 'ok',
             timestamp: new Date().toISOString(),
             database: dbStatus,
         };
-        res.status(200).json(healthStatus);
+        // Si la DB falla, devolvemos 503, si no 200
+        const statusCode = dbStatus.status === 'error' ? 503 : 200;
+        res.status(statusCode).json(healthStatus);
     } catch (error) {
         console.error("Error en el Health Check:", error);
         res.status(503).json({
             status: 'error',
             timestamp: new Date().toISOString(),
-            details: 'El servidor está activo pero hay un problema con un servicio crítico.',
-            database: { status: 'error', message: error.message }
+            details: 'Error crítico en el servidor.'
         });
     }
 });
@@ -84,21 +85,31 @@ router.post(
     body('tip_percentage').isInt({ min: 20, max: 25 }).isIn([20, 23, 25]).withMessage('Porcentaje de propina no válido.'),
     body('transaction_id').isString().notEmpty().withMessage('ID de transacción es requerido.')
   ],
-  (req, res, next) => {
+  // 🚨 NOTA: Se agregó 'async' aquí para poder usar await dentro
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: errors.array()[0].msg });
     }
 
     try {
-      const result = db.addTip({
+      // 🚨 CORRECCIÓN CRÍTICA: Faltaba el 'await' aquí.
+      // Sin await, el servidor respondía antes de guardar en la DB.
+      const result = await db.addTip({
         ...req.body,
         user_agent: req.headers['user-agent'],
         created_at: new Date().toISOString()
       });
+      
+      // Verificamos si db.addTip devolvió un indicador de duplicado
+      if (result && result.duplicate) {
+         return res.status(200).json({ message: 'Propina duplicada, ya registrada anteriormente.' });
+      }
+
       res.status(201).json({ id: result.id, message: 'Propina registrada con éxito' });
     } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      // Capturamos errores de duplicados de Postgres (código 23505)
+      if (error.code === '23505') {
         console.log(`Transacción duplicada detectada y rechazada: ${req.body.transaction_id}`);
         return res.status(200).json({ message: 'Propina duplicada, ya registrada anteriormente.' });
       }
@@ -108,9 +119,10 @@ router.post(
 );
 
 // Ruta para obtener las propinas (requiere autenticación).
-router.get('/tips', auth, (req, res, next) => {
+router.get('/tips', auth, async (req, res, next) => { // 🚨 Se agregó async
   try {
-    const tips = db.getTips(req.query);
+    // 🚨 Se agregó await (getTips es una función asíncrona)
+    const tips = await db.getTips(req.query);
     res.status(200).json(tips);
   } catch (error) {
     next(error);
@@ -118,9 +130,10 @@ router.get('/tips', auth, (req, res, next) => {
 });
 
 // Ruta para exportar las propinas a CSV (requiere autenticación).
-router.get('/tips/csv', auth, (req, res, next) => {
+router.get('/tips/csv', auth, async (req, res, next) => { // 🚨 Se agregó async
     try {
-      const tips = db.getTips(req.query);
+      // 🚨 Se agregó await
+      const tips = await db.getTips(req.query);
   
       if (tips.length === 0) {
         return res.status(404).json({ error: 'No hay registros para exportar.' });
@@ -152,6 +165,7 @@ router.get('/tips/csv', auth, (req, res, next) => {
 // Ruta para obtener la lista de meseros.
 router.get('/waiters', (req, res, next) => {
   try {
+    // getWaiters es síncrona (devuelve array fijo), así que no necesita await.
     const waiters = db.getWaiters();
     res.status(200).json(waiters);
   } catch (error) {
