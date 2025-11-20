@@ -84,10 +84,16 @@ const app = {
 
     // Verificamos si realmente tenemos conexión.
     verifyOnlineStatus() {
-        fetch('/api/ping', { method: 'HEAD', cache: 'no-store' }) 
+        // CAMBIO IMPORTANTE: Usamos /api/ping en lugar de /api/session
+        // Esto evita falsos positivos cuando Neon está "despertando".
+        fetch('/api/ping', { method: 'HEAD', cache: 'no-store' })
             .then(response => {
                 if (response.ok) {
+                    // Si el servidor responde (aunque la DB esté dormida), tenemos internet.
                     this.DOMElements.offlineIndicator.classList.add('hidden');
+                    
+                    // Opcional: Intentar despertar la DB en segundo plano
+                    fetch('/api/health').catch(() => {}); 
                 } else {
                     throw new Error('Offline status confirmed');
                 }

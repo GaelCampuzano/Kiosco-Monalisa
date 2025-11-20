@@ -13,25 +13,34 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// ==================================================================
+// 🚨 CORRECCIÓN CRÍTICA AQUÍ 🚨
+// Esta ruta debe ir ANTES del app.use(session(...))
+// Responde "pong" sin intentar tocar la base de datos de Neon.
 app.get('/api/ping', (req, res) => {
   res.status(200).send('pong');
 });
+// ==================================================================
 
 // Configuración de sesiones con Postgres
+// (Si Neon está dormido, esto podría fallar, pero ya no bloqueará el chequeo de internet)
 app.use(session({
   store: new pgSession({
-    // connect-pg-simple usará automáticamente POSTGRES_URL del .env
     tableName: 'session',
-    createTableIfMissing: true 
+    createTableIfMissing: true,
+    conObject: {
+      connectionString: process.env.POSTGRES_URL,
+      ssl: true // Neon requiere SSL
+    }
   }),
   name: 'kiosco.session',
   secret: process.env.SESSION_SECRET || 'secreto-temporal-cambiar-en-prod',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: isProduction, // true solo en https (producción)
+    secure: isProduction,
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 // 1 día
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
