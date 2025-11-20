@@ -84,18 +84,18 @@ const app = {
 
     // Verificamos si realmente tenemos conexión.
     verifyOnlineStatus() {
-        fetch('/api/session', { method: 'HEAD', cache: 'no-store' })
-            .then(response => {
-                if (response.ok) {
-                    this.DOMElements.offlineIndicator.classList.add('hidden');
-                } else {
-                    throw new Error('Offline status confirmed');
-                }
-            })
-            .catch(() => {
-                this.DOMElements.offlineIndicator.classList.remove('hidden');
-            });
-    },
+        fetch('/api/ping', { method: 'HEAD', cache: 'no-store' })
+        .then(response => {
+            if (response.ok) {
+                this.DOMElements.offlineIndicator.classList.add('hidden');
+            } else {
+                throw new Error('Offline status confirmed');
+            }
+        })
+        .catch(() => {
+            this.DOMElements.offlineIndicator.classList.remove('hidden');
+        });
+},
 
     // Escuchamos los mensajes del Service Worker.
     listenForSWMessages() {
